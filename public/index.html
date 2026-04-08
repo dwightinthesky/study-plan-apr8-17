@@ -6,335 +6,156 @@
 <title>讀書計劃 Apr 8–17</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #f5f3ee;
-  --surface: #ffffff;
-  --border: #e0dcd4;
-  --border2: #ccc8c0;
-  --text: #1a1916;
-  --muted: #8a8678;
-  --accent: #c0392b;
-
-  --law-1:  #ddeaf8; --law-1t:  #1a4a7a;
-  --law-2:  #c8ddf5; --law-2t:  #12397a;
-  --law-3:  #a8c8f0; --law-3t:  #0a2d6e;
-  --law-4:  #88b0e8; --law-4t:  #06225e;
-  --acct:   #ddf0d4; --acctt:   #1a5c10;
-  --stat:   #f0ead4; --statt:   #5a4a0a;
-  --psych:  #f0d8ec; --psycht:  #6a1a5a;
-  --sust:   #d4ecea; --sustt:   #0a4a44;
-  --cs:     #fde8d0; --cst:     #6a3010;
-  --sprint: #fde8e8; --sprintt: #8a1a1a;
-  --done:   #e8f0e4; --donet:   #4a7040;
-  --rest:   #f0ede8; --restt:   #7a7670;
-  --exam:   #fef3e2; --examt:   #7a4a08;
+:root{
+  --bg:#f5f3ee;--surface:#fff;--border:#e0dcd4;--border2:#ccc8c0;
+  --text:#1a1916;--muted:#8a8678;--accent:#c0392b;
+  --law-1:#ddeaf8;--law-1t:#1a4a7a;--law-2:#c8ddf5;--law-2t:#12397a;
+  --law-3:#a8c8f0;--law-3t:#0a2d6e;--law-4:#88b0e8;--law-4t:#06225e;
+  --acct:#ddf0d4;--acctt:#1a5c10;--stat:#f0ead4;--statt:#5a4a0a;
+  --psych:#f0d8ec;--psycht:#6a1a5a;--sust:#d4ecea;--sustt:#0a4a44;
+  --cs:#fde8d0;--cst:#6a3010;--sprint:#fde8e8;--sprintt:#8a1a1a;
+  --done:#e8f0e4;--donet:#4a7040;--rest:#f0ede8;--restt:#7a7670;
+  --exam:#fef3e2;--examt:#7a4a08;
 }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;line-height:1.5;min-height:100vh;}
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* NAV */
+nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:stretch;padding:0 2rem;}
+nav a{display:flex;align-items:center;padding:0 1.25rem;height:44px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;cursor:pointer;}
+nav a:hover{color:var(--text);}
+nav a.active{color:var(--text);border-bottom-color:var(--accent);}
+nav .nav-title{font-family:'Fraunces',serif;font-weight:300;font-size:1.1rem;color:var(--text);letter-spacing:-0.01em;margin-right:1.5rem;display:flex;align-items:center;border-bottom:2px solid transparent;}
+nav .nav-title-small{font-size:.9em;margin-left:.28em;}
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  line-height: 1.5;
-  min-height: 100vh;
+/* PAGES */
+.page{display:none;}.page.active{display:block;}
+.page-header{padding:1.25rem 2rem .75rem;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;}
+.page-header .subtitle{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+.priority-row{display:flex;align-items:center;gap:6px;padding:.6rem 2rem;border-bottom:1px solid var(--border);flex-wrap:wrap;background:var(--surface);}
+.priority-row span{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+.pb{font-size:10px;padding:2px 8px;border-radius:2px;letter-spacing:.04em;}
+.pb.law{background:var(--law-1);color:var(--law-1t);}
+.pb.acct{background:var(--acct);color:var(--acctt);}
+.pb.stat{background:var(--stat);color:var(--statt);}
+.pb.psych{background:var(--psych);color:var(--psycht);}
+.pb.sust{background:var(--sust);color:var(--sustt);}
+.pb.cs{background:var(--cs);color:var(--cst);}
+.arr{color:var(--border2);font-size:12px;}
+
+/* STATUS */
+.status-card{margin:1.25rem 2rem;padding:1.1rem 1.5rem;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:4px;display:grid;grid-template-columns:1fr 1px 1fr;gap:1.5rem;align-items:center;}
+.status-divider{background:var(--border);height:100%;}
+.status-block label{display:block;font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}
+.status-block .val{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:600;color:var(--text);line-height:1;}
+.status-block .sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.val.red{color:var(--accent);}.val.green{color:#1a7a10;}
+.clock-row{padding:.4rem 2rem 0;font-size:11px;color:var(--muted);letter-spacing:.04em;}
+
+/* SCHEDULE GRID */
+.days-grid{display:grid;gap:1px;background:var(--border);margin:1.25rem 2rem;border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+.days-grid.cols-5{grid-template-columns:repeat(5,1fr);}
+.day-col{background:var(--bg);display:flex;flex-direction:column;position:relative;}
+.day-head{padding:9px 10px 7px;background:var(--surface);border-bottom:1px solid var(--border);}
+.day-head.today-head{border-top:2px solid var(--accent);}
+.day-head .dname{font-size:11px;color:var(--text);font-weight:500;letter-spacing:.04em;}
+.day-head .dhours{font-size:9px;color:var(--muted);margin-top:2px;}
+.day-head .dexam{font-size:9px;color:var(--accent);margin-top:3px;font-weight:500;}
+.timeline{flex:1;position:relative;padding:4px 0;}
+.slot{margin:2px 6px;padding:7px 8px;border-radius:3px;cursor:default;transition:opacity .15s;}
+.slot:hover{opacity:.8;}
+.slot .s-time{font-size:9px;opacity:.6;letter-spacing:.03em;margin-bottom:2px;}
+.slot .s-label{font-size:8.5px;opacity:.65;margin-bottom:1px;}
+.slot .s-name{font-size:10.5px;font-weight:500;line-height:1.3;}
+.slot .s-dur{font-size:9px;opacity:.6;margin-top:3px;}
+.slot.law1{background:var(--law-1);color:var(--law-1t);}
+.slot.law2{background:var(--law-2);color:var(--law-2t);}
+.slot.law3{background:var(--law-3);color:var(--law-3t);}
+.slot.law4{background:var(--law-4);color:var(--law-4t);}
+.slot.acct{background:var(--acct);color:var(--acctt);}
+.slot.stat{background:var(--stat);color:var(--statt);}
+.slot.psych{background:var(--psych);color:var(--psycht);}
+.slot.sust{background:var(--sust);color:var(--sustt);}
+.slot.cs{background:var(--cs);color:var(--cst);}
+.slot.sprint{background:var(--sprint);color:var(--sprintt);}
+.slot.done{background:var(--done);color:var(--donet);opacity:.65;}
+.slot.done .s-name{text-decoration:line-through;}
+.slot.rest{background:var(--rest);color:var(--restt);font-size:9.5px;text-align:center;padding:5px 6px;}
+.slot.exam-slot{background:var(--exam);color:var(--examt);font-weight:500;border-left:3px solid var(--accent);}
+
+/* NOW LINE */
+.now-line{position:absolute;left:0;right:0;height:1.5px;background:var(--accent);z-index:10;pointer-events:none;}
+.now-line::before{content:'';position:absolute;left:4px;top:-3.5px;width:7px;height:7px;background:var(--accent);border-radius:50%;}
+.now-label{position:absolute;left:14px;top:-9px;font-size:9px;color:var(--accent);font-family:'DM Mono',monospace;font-weight:500;background:var(--bg);padding:0 3px;z-index:11;pointer-events:none;}
+
+/* PROGRESS PAGE */
+.prog-wrap{padding:1.25rem 2rem;overflow-x:auto;}
+
+/* summary bar */
+.prog-summary{display:flex;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:1.25rem;}
+.prog-summary-card{background:var(--surface);padding:.85rem 1.1rem;flex:1;min-width:0;}
+.prog-summary-card label{display:block;font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+.prog-summary-card .sv{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:600;color:var(--text);line-height:1;}
+.prog-summary-card .ss{font-size:10px;color:var(--muted);margin-top:3px;}
+
+/* 6-col subject grid */
+.prog-cols{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;min-width:900px;}
+
+.prog-col{background:var(--bg);display:flex;flex-direction:column;}
+
+.prog-col-head{padding:10px 10px 8px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;}
+.prog-col-head .pch-title{font-family:'Fraunces',serif;font-size:1rem;color:var(--text);}
+.prog-col-head .pch-count{font-size:10px;color:var(--muted);margin-top:3px;}
+.prog-col-head .pch-bar{height:3px;border-radius:2px;background:var(--border);margin-top:6px;overflow:hidden;}
+.prog-col-head .pch-bar-fill{height:100%;border-radius:2px;transition:width .3s;}
+
+/* task item */
+.task-item{display:flex;align-items:flex-start;gap:8px;padding:7px 8px;margin:2px 6px;border-radius:3px;cursor:pointer;transition:opacity .15s;}
+.task-item:hover{opacity:.85;}
+.task-item.is-done{opacity:.55;}
+.task-item.is-done .ti-name{text-decoration:line-through;}
+
+.task-item input[type=checkbox]{
+  flex-shrink:0;
+  width:15px;height:15px;
+  margin-top:2px;
+  accent-color:var(--accent);
+  cursor:pointer;
 }
+.ti-body{min-width:0;}
+.ti-meta{font-size:8.5px;opacity:.55;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ti-label{font-size:8.5px;opacity:.6;margin-bottom:1px;}
+.ti-name{font-size:10px;font-weight:500;line-height:1.3;}
+.ti-dur{font-size:8.5px;opacity:.55;margin-top:2px;}
 
-/* ── NAV ── */
-nav {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: stretch;
-  gap: 0;
-  padding: 0 2rem;
+/* color strips per subject */
+.prog-col.c-law .task-item{background:var(--law-1);color:var(--law-1t);}
+.prog-col.c-acct .task-item{background:var(--acct);color:var(--acctt);}
+.prog-col.c-stat .task-item{background:var(--stat);color:var(--statt);}
+.prog-col.c-psych .task-item{background:var(--psych);color:var(--psycht);}
+.prog-col.c-sust .task-item{background:var(--sust);color:var(--sustt);}
+.prog-col.c-cs .task-item{background:var(--cs);color:var(--cst);}
+
+.prog-col.c-law .pch-bar-fill{background:var(--law-3t);}
+.prog-col.c-acct .pch-bar-fill{background:var(--acctt);}
+.prog-col.c-stat .pch-bar-fill{background:var(--statt);}
+.prog-col.c-psych .pch-bar-fill{background:var(--psycht);}
+.prog-col.c-sust .pch-bar-fill{background:var(--sustt);}
+.prog-col.c-cs .pch-bar-fill{background:var(--cst);}
+
+footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;color:var(--muted);letter-spacing:.04em;background:var(--surface);}
+
+@media(max-width:960px){
+  .days-grid.cols-5{grid-template-columns:repeat(3,1fr);}
+  .prog-summary{flex-wrap:wrap;}
 }
-
-nav a {
-  display: flex;
-  align-items: center;
-  padding: 0 1.25rem;
-  height: 44px;
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
-  transition: color 0.15s, border-color 0.15s;
-  cursor: pointer;
-}
-nav a:hover { color: var(--text); }
-nav a.active { color: var(--text); border-bottom-color: var(--accent); }
-
-nav .nav-title {
-  font-family: 'Fraunces', serif;
-  font-weight: 300;
-  font-size: 1.1rem;
-  color: var(--text);
-  letter-spacing: -0.01em;
-  margin-right: 1.5rem;
-  display: flex;
-  align-items: center;
-  padding: 0;
-  border-bottom: 2px solid transparent;
-}
-
-nav .nav-title-small {
-  font-size: 0.9em;
-  margin-left: 0.28em;
-}
-
-/* ── PAGES ── */
-.page { display: none; }
-.page.active { display: block; }
-
-/* ── HEADER (inside page) ── */
-.page-header {
-  padding: 1.25rem 2rem 0.75rem;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-.page-header .subtitle { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
-
-.priority-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0.6rem 2rem;
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
-  background: var(--surface);
-}
-.priority-row span { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
-.pb { font-size: 10px; padding: 2px 8px; border-radius: 2px; letter-spacing: 0.04em; }
-.pb.law   { background: var(--law-1);  color: var(--law-1t); }
-.pb.acct  { background: var(--acct);   color: var(--acctt); }
-.pb.stat  { background: var(--stat);   color: var(--statt); }
-.pb.psych { background: var(--psych);  color: var(--psycht); }
-.pb.sust  { background: var(--sust);   color: var(--sustt); }
-.pb.cs    { background: var(--cs);     color: var(--cst); }
-.arr { color: var(--border2); font-size: 12px; }
-
-/* ── STATUS CARD ── */
-.status-card {
-  margin: 1.25rem 2rem;
-  padding: 1.1rem 1.5rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  border-radius: 4px;
-  display: grid;
-  grid-template-columns: 1fr 1px 1fr;
-  gap: 1.5rem;
-  align-items: center;
-}
-.status-divider { background: var(--border); height: 100%; }
-.status-block label { display: block; font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 5px; }
-.status-block .val { font-family: 'Fraunces', serif; font-size: 1.7rem; font-weight: 600; color: var(--text); line-height: 1; }
-.status-block .sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
-.val.red   { color: var(--accent); }
-.val.green { color: #1a7a10; }
-
-.clock-row { padding: 0.4rem 2rem 0; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
-
-/* ── GRID ── */
-.days-grid {
-  display: grid;
-  gap: 1px;
-  background: var(--border);
-  margin: 1.25rem 2rem;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-}
-.days-grid.cols-5 { grid-template-columns: repeat(5,1fr); }
-.days-grid.cols-3 { grid-template-columns: repeat(3,1fr); }
-
-.day-col { background: var(--bg); display: flex; flex-direction: column; position: relative; }
-
-.day-head { padding: 9px 10px 7px; background: var(--surface); border-bottom: 1px solid var(--border); }
-.day-head.today-head { border-top: 2px solid var(--accent); }
-.day-head .dname  { font-size: 11px; color: var(--text); font-weight: 500; letter-spacing: 0.04em; }
-.day-head .dhours { font-size: 9px; color: var(--muted); margin-top: 2px; }
-.day-head .dexam  { font-size: 9px; color: var(--accent); margin-top: 3px; font-weight: 500; }
-
-.timeline { flex: 1; position: relative; padding: 4px 0; }
-
-.slot { margin: 2px 6px; padding: 7px 8px; border-radius: 3px; cursor: default; transition: opacity 0.15s; }
-.slot:hover { opacity: 0.8; }
-.slot .s-time  { font-size: 9px; opacity: 0.6; letter-spacing: 0.03em; margin-bottom: 2px; }
-.slot .s-label { font-size: 8.5px; opacity: 0.65; margin-bottom: 1px; }
-.slot .s-name  { font-size: 10.5px; font-weight: 500; line-height: 1.3; }
-.slot .s-dur   { font-size: 9px; opacity: 0.6; margin-top: 3px; }
-
-.slot.law1   { background: var(--law-1);  color: var(--law-1t); }
-.slot.law2   { background: var(--law-2);  color: var(--law-2t); }
-.slot.law3   { background: var(--law-3);  color: var(--law-3t); }
-.slot.law4   { background: var(--law-4);  color: var(--law-4t); }
-.slot.acct   { background: var(--acct);   color: var(--acctt); }
-.slot.stat   { background: var(--stat);   color: var(--statt); }
-.slot.psych  { background: var(--psych);  color: var(--psycht); }
-.slot.sust   { background: var(--sust);   color: var(--sustt); }
-.slot.cs     { background: var(--cs);     color: var(--cst); }
-.slot.sprint { background: var(--sprint); color: var(--sprintt); }
-.slot.done   { background: var(--done);   color: var(--donet); text-decoration: line-through; opacity: 0.6; }
-.slot.rest   { background: var(--rest);   color: var(--restt); font-size: 9.5px; text-align: center; padding: 5px 6px; }
-.slot.exam-slot { background: var(--exam); color: var(--examt); font-weight: 500; border-left: 3px solid var(--accent); }
-
-/* ── NOW LINE ── */
-.now-line {
-  position: absolute; left: 0; right: 0; height: 1.5px;
-  background: var(--accent); z-index: 10; pointer-events: none;
-}
-.now-line::before {
-  content: ''; position: absolute; left: 4px; top: -3.5px;
-  width: 7px; height: 7px; background: var(--accent); border-radius: 50%;
-}
-.now-label {
-  position: absolute; left: 14px; top: -9px; font-size: 9px;
-  color: var(--accent); font-family: 'DM Mono', monospace; font-weight: 500;
-  background: var(--bg); padding: 0 3px; z-index: 11; pointer-events: none;
-}
-
-.progress-shell {
-  margin: 1.25rem 2rem;
-  display: grid;
-  gap: 1rem;
-}
-
-.progress-summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-summary-card {
-  background: var(--surface);
-  padding: 1rem 1.1rem;
-}
-
-.progress-summary-card label {
-  display: block;
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.progress-summary-card .val {
-  font-family: 'Fraunces', serif;
-  font-size: 1.7rem;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1;
-}
-
-.progress-summary-card .sub {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-.progress-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.subject-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.subject-head {
-  padding: 0.95rem 1rem 0.85rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 1rem;
-}
-
-.subject-head .title {
-  font-family: 'Fraunces', serif;
-  font-size: 1.2rem;
-  color: var(--text);
-}
-
-.subject-head .meta,
-.subject-head .count-label {
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.subject-head .count {
-  text-align: right;
-}
-
-.subject-head .count strong {
-  display: block;
-  font-family: 'Fraunces', serif;
-  font-size: 1.1rem;
-  color: var(--text);
-  line-height: 1;
-}
-
-.task-list {
-  padding: 0.95rem;
-  display: grid;
-  gap: 0.6rem;
-  background: var(--bg);
-}
-
-.task-list .slot {
-  margin: 0;
-}
-
-.task-empty {
-  border: 1px dashed var(--border2);
-  border-radius: 4px;
-  padding: 0.9rem;
-  background: var(--surface);
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-footer {
-  padding: 1.25rem 2rem;
-  border-top: 1px solid var(--border);
-  font-size: 10px; color: var(--muted); letter-spacing: 0.04em;
-  background: var(--surface);
-}
-
-@media (max-width: 960px) {
-  .days-grid.cols-5 { grid-template-columns: repeat(3,1fr); }
-  .days-grid.cols-3 { grid-template-columns: repeat(2,1fr); }
-  .progress-summary,
-  .progress-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 640px) {
-  .days-grid.cols-5, .days-grid.cols-3 { grid-template-columns: 1fr 1fr; }
-  .status-card { grid-template-columns: 1fr; }
-  .status-divider { display: none; }
-  nav { padding: 0 1rem; }
-  .page-header, .priority-row, .status-card, .days-grid, .clock-row, .progress-shell { margin-left: 1rem; margin-right: 1rem; }
+@media(max-width:640px){
+  .days-grid.cols-5{grid-template-columns:1fr 1fr;}
+  .status-card{grid-template-columns:1fr;}
+  .status-divider{display:none;}
+  nav{padding:0 1rem;}
+  .page-header,.priority-row,.status-card,.days-grid,.clock-row,.prog-wrap{margin-left:0;margin-right:0;padding-left:1rem;padding-right:1rem;}
+  .prog-wrap{padding-left:.5rem;padding-right:.5rem;}
 }
 </style>
 </head>
@@ -347,24 +168,19 @@ footer {
   <a id="tab-progress" onclick="switchTab('progress')">各科進度</a>
 </nav>
 
-<!-- ══════════════ 準備週 4/8–4/12 ══════════════ -->
+<!-- ══════ 準備週 ══════ -->
 <div class="page active" id="page-prep">
-
-  <div class="page-header">
-    <span class="subtitle">Apr 8 – 12　準備週</span>
-  </div>
-
+  <div class="page-header"><span class="subtitle">Apr 8 – 12　準備週</span></div>
   <div class="priority-row">
     <span>Priority</span>
     <span class="pb law">Law</span><span class="arr">›</span>
     <span class="pb acct">Acct</span><span class="arr">›</span>
     <span class="pb stat">Stats</span><span class="arr">›</span>
-    <span class="pb psych">Psych</span>
+    <span class="pb psych">Psych</span><span class="arr">›</span>
+    <span class="pb sust">Sust</span>
   </div>
-
   <div class="clock-row" id="clock-prep">--:--</div>
-
-  <div class="status-card" id="card-prep">
+  <div class="status-card">
     <div class="status-block">
       <label>目前 Session</label>
       <div class="val" id="prep-cur-name">—</div>
@@ -381,151 +197,122 @@ footer {
       <div class="sub">後開始</div>
     </div>
   </div>
-
   <div class="days-grid cols-5">
-
     <!-- 4/8 -->
     <div class="day-col">
       <div class="day-head today-head">
-        <div class="dname">4/8 Wed 今天</div>
-        <div class="dhours">12:00 – 23:00</div>
+        <div class="dname">4/8 Wed 今天</div><div class="dhours">12:00–23:30</div>
       </div>
       <div class="timeline" id="tl-0408">
         <div class="slot rest" data-start="12:00" data-end="13:00">12:00–13:00　午休</div>
-        <div class="slot law1" data-start="13:00" data-end="14:00"><div class="s-time">13:00–14:00</div><div class="s-label">EU W1 ①</div><div class="s-name">初次複習</div><div class="s-dur">1h</div></div>
-        <div class="slot law2" data-start="14:00" data-end="15:00"><div class="s-time">14:00–15:00</div><div class="s-label">EU W1 ②</div><div class="s-name">初次 Essay</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="15:00" data-end="15:15">15:00–15:15　休息</div>
-        <div class="slot law3" data-start="15:15" data-end="16:00"><div class="s-time">15:15–16:00</div><div class="s-label">EU W10+11 ③</div><div class="s-name">再次複習</div><div class="s-dur">45min</div></div>
-        <div class="slot rest" data-start="16:00" data-end="16:15">16:00–16:15　休息</div>
-        <div class="slot law4" data-start="16:15" data-end="17:15"><div class="s-time">16:15–17:15</div><div class="s-label">EU W10+11 ④</div><div class="s-name">Essay 第二次</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="17:15" data-end="18:15">17:15–18:15　晚餐</div>
-        <div class="slot acct" data-start="18:15" data-end="19:45"><div class="s-time">18:15–19:45</div><div class="s-name">Acct W4-6</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="19:45" data-end="20:00">19:45–20:00　休息</div>
-        <div class="slot stat" data-start="20:00" data-end="21:30"><div class="s-time">20:00–21:30</div><div class="s-name">Stats W1+2</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="21:30" data-end="21:45">21:30–21:45　休息</div>
-        <div class="slot psych" data-start="21:45" data-end="22:45"><div class="s-time">21:45–22:45</div><div class="s-name">Psych 1 Emotions</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="22:45" data-end="23:00">22:45–23:00　收尾</div>
+        <div class="slot law1" data-sid="eu-w1-1" data-start="13:00" data-end="14:00"><div class="s-time">13:00–14:00</div><div class="s-label">EU W1 ①</div><div class="s-name">初次複習</div><div class="s-dur">1h</div></div>
+        <div class="slot law2" data-sid="eu-w1-2" data-start="14:00" data-end="15:00"><div class="s-time">14:00–15:00</div><div class="s-label">EU W1 ②</div><div class="s-name">初次 Essay</div><div class="s-dur">1h</div></div>
+        <div class="slot rest" data-start="15:00" data-end="15:15">休息</div>
+        <div class="slot law3" data-sid="eu-w1011-3" data-start="15:15" data-end="16:00"><div class="s-time">15:15–16:00</div><div class="s-label">EU W10+11 ③</div><div class="s-name">再次複習</div><div class="s-dur">45min</div></div>
+        <div class="slot rest" data-start="16:00" data-end="16:15">休息</div>
+        <div class="slot law4" data-sid="eu-w1011-4" data-start="16:15" data-end="17:15"><div class="s-time">16:15–17:15</div><div class="s-label">EU W10+11 ④</div><div class="s-name">Essay 第二次</div><div class="s-dur">1h</div></div>
+        <div class="slot rest" data-start="17:15" data-end="18:15">晚餐</div>
+        <div class="slot acct" data-sid="acct-w46" data-start="18:15" data-end="19:45"><div class="s-time">18:15–19:45</div><div class="s-name">Acct W4-6</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="19:45" data-end="20:00">休息</div>
+        <div class="slot stat" data-sid="stat-w12" data-start="20:00" data-end="21:30"><div class="s-time">20:00–21:30</div><div class="s-name">Stats W1+2</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="21:30" data-end="21:45">休息</div>
+        <div class="slot psych" data-sid="psych-1" data-start="21:45" data-end="22:45"><div class="s-time">21:45–22:45</div><div class="s-name">Psych 1 Emotions</div><div class="s-dur">1h</div></div>
+        <div class="slot sust" data-sid="sust-ch12" data-start="22:45" data-end="23:15"><div class="s-time">22:45–23:15</div><div class="s-name">Sust Ch.1–2 預習</div><div class="s-dur">30min</div></div>
+        <div class="slot rest" data-start="23:15" data-end="23:30">收尾</div>
       </div>
     </div>
-
     <!-- 4/9 -->
     <div class="day-col">
-      <div class="day-head">
-        <div class="dname">4/9 Thu</div>
-        <div class="dhours">12:00 – 23:00</div>
-      </div>
+      <div class="day-head"><div class="dname">4/9 Thu</div><div class="dhours">12:00–23:30</div></div>
       <div class="timeline" id="tl-0409">
-        <div class="slot law1" data-start="12:00" data-end="13:00"><div class="s-time">12:00–13:00</div><div class="s-label">EU W8 ①</div><div class="s-name">初次複習</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="13:00" data-end="14:00">13:00–14:00　午休</div>
-        <div class="slot law2" data-start="14:00" data-end="15:00"><div class="s-time">14:00–15:00</div><div class="s-label">EU W8 ②</div><div class="s-name">初次 Essay</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="15:00" data-end="15:15">15:00–15:15　休息</div>
-        <div class="slot law3" data-start="15:15" data-end="16:00"><div class="s-time">15:15–16:00</div><div class="s-label">EU W8 ③</div><div class="s-name">再次複習</div><div class="s-dur">45min</div></div>
-        <div class="slot rest" data-start="16:00" data-end="16:15">16:00–16:15　休息</div>
-        <div class="slot law4" data-start="16:15" data-end="17:15"><div class="s-time">16:15–17:15</div><div class="s-label">EU W8 ④</div><div class="s-name">Essay 第二次</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="17:15" data-end="18:15">17:15–18:15　晚餐</div>
-        <div class="slot acct" data-start="18:15" data-end="19:45"><div class="s-time">18:15–19:45</div><div class="s-name">Acct W7</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="19:45" data-end="20:00">19:45–20:00　休息</div>
-        <div class="slot stat" data-start="20:00" data-end="21:30"><div class="s-time">20:00–21:30</div><div class="s-name">Stats W3+4</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="21:30" data-end="21:45">21:30–21:45　休息</div>
-        <div class="slot psych" data-start="21:45" data-end="22:45"><div class="s-time">21:45–22:45</div><div class="s-name">Psych 2 Culture</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="22:45" data-end="23:00">22:45–23:00　收尾</div>
+        <div class="slot law1" data-sid="eu-w8-1" data-start="12:00" data-end="13:00"><div class="s-time">12:00–13:00</div><div class="s-label">EU W8 ①</div><div class="s-name">初次複習</div><div class="s-dur">1h</div></div>
+        <div class="slot rest" data-start="13:00" data-end="14:00">午休</div>
+        <div class="slot law2" data-sid="eu-w8-2" data-start="14:00" data-end="15:00"><div class="s-time">14:00–15:00</div><div class="s-label">EU W8 ②</div><div class="s-name">初次 Essay</div><div class="s-dur">1h</div></div>
+        <div class="slot rest" data-start="15:00" data-end="15:15">休息</div>
+        <div class="slot law3" data-sid="eu-w8-3" data-start="15:15" data-end="16:00"><div class="s-time">15:15–16:00</div><div class="s-label">EU W8 ③</div><div class="s-name">再次複習</div><div class="s-dur">45min</div></div>
+        <div class="slot rest" data-start="16:00" data-end="16:15">休息</div>
+        <div class="slot law4" data-sid="eu-w8-4" data-start="16:15" data-end="17:15"><div class="s-time">16:15–17:15</div><div class="s-label">EU W8 ④</div><div class="s-name">Essay 第二次</div><div class="s-dur">1h</div></div>
+        <div class="slot rest" data-start="17:15" data-end="18:15">晚餐</div>
+        <div class="slot acct" data-sid="acct-w7" data-start="18:15" data-end="19:45"><div class="s-time">18:15–19:45</div><div class="s-name">Acct W7</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="19:45" data-end="20:00">休息</div>
+        <div class="slot stat" data-sid="stat-w34" data-start="20:00" data-end="21:30"><div class="s-time">20:00–21:30</div><div class="s-name">Stats W3+4</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="21:30" data-end="21:45">休息</div>
+        <div class="slot psych" data-sid="psych-2" data-start="21:45" data-end="22:45"><div class="s-time">21:45–22:45</div><div class="s-name">Psych 2 Culture</div><div class="s-dur">1h</div></div>
+        <div class="slot sust" data-sid="sust-ch34" data-start="22:45" data-end="23:15"><div class="s-time">22:45–23:15</div><div class="s-name">Sust Ch.3–4 預習</div><div class="s-dur">30min</div></div>
+        <div class="slot rest" data-start="23:15" data-end="23:30">收尾</div>
       </div>
     </div>
-
     <!-- 4/10 -->
     <div class="day-col">
-      <div class="day-head">
-        <div class="dname">4/10 Fri</div>
-        <div class="dhours">12:00 – 23:00</div>
-      </div>
+      <div class="day-head"><div class="dname">4/10 Fri</div><div class="dhours">12:00–23:30</div></div>
       <div class="timeline" id="tl-0410">
-        <div class="slot done" data-start="12:00" data-end="12:00"><div class="s-label">EU W10+11 ①②</div><div class="s-name">已完成 ✓</div></div>
-        <div class="slot law3" data-start="12:00" data-end="12:45"><div class="s-time">12:00–12:45</div><div class="s-label">EU W1 ③</div><div class="s-name">再次複習</div><div class="s-dur">45min</div></div>
-        <div class="slot rest" data-start="12:45" data-end="13:00">12:45–13:00　休息</div>
-        <div class="slot law4" data-start="13:00" data-end="14:00"><div class="s-time">13:00–14:00</div><div class="s-label">EU W1 ④</div><div class="s-name">Essay 第二次</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="14:00" data-end="15:00">14:00–15:00　午休</div>
-        <div class="slot acct" data-start="15:00" data-end="16:30"><div class="s-time">15:00–16:30</div><div class="s-name">Acct W8</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="16:30" data-end="16:45">16:30–16:45　休息</div>
-        <div class="slot acct" data-start="16:45" data-end="18:15"><div class="s-time">16:45–18:15</div><div class="s-name">Acct W9</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="18:15" data-end="19:15">18:15–19:15　晚餐</div>
-        <div class="slot stat" data-start="19:15" data-end="20:45"><div class="s-time">19:15–20:45</div><div class="s-name">Stats W5+6</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="20:45" data-end="21:00">20:45–21:00　休息</div>
-        <div class="slot psych" data-start="21:00" data-end="22:00"><div class="s-time">21:00–22:00</div><div class="s-name">Psych 3 Social Influence</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="22:00" data-end="23:00">22:00–23:00　收尾</div>
+        <div class="slot done" data-sid="eu-w1011-12" data-start="12:00" data-end="12:00"><div class="s-label">EU W10+11 ①②</div><div class="s-name">已完成 ✓</div></div>
+        <div class="slot law3" data-sid="eu-w1-3" data-start="12:00" data-end="12:45"><div class="s-time">12:00–12:45</div><div class="s-label">EU W1 ③</div><div class="s-name">再次複習</div><div class="s-dur">45min</div></div>
+        <div class="slot rest" data-start="12:45" data-end="13:00">休息</div>
+        <div class="slot law4" data-sid="eu-w1-4" data-start="13:00" data-end="14:00"><div class="s-time">13:00–14:00</div><div class="s-label">EU W1 ④</div><div class="s-name">Essay 第二次</div><div class="s-dur">1h</div></div>
+        <div class="slot rest" data-start="14:00" data-end="15:00">午休</div>
+        <div class="slot acct" data-sid="acct-w8" data-start="15:00" data-end="16:30"><div class="s-time">15:00–16:30</div><div class="s-name">Acct W8</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="16:30" data-end="16:45">休息</div>
+        <div class="slot acct" data-sid="acct-w9" data-start="16:45" data-end="18:15"><div class="s-time">16:45–18:15</div><div class="s-name">Acct W9</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="18:15" data-end="19:15">晚餐</div>
+        <div class="slot stat" data-sid="stat-w56" data-start="19:15" data-end="20:45"><div class="s-time">19:15–20:45</div><div class="s-name">Stats W5+6</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="20:45" data-end="21:00">休息</div>
+        <div class="slot psych" data-sid="psych-3" data-start="21:00" data-end="22:00"><div class="s-time">21:00–22:00</div><div class="s-name">Psych 3 Social Influence</div><div class="s-dur">1h</div></div>
+        <div class="slot sust" data-sid="sust-ch56" data-start="22:00" data-end="22:30"><div class="s-time">22:00–22:30</div><div class="s-name">Sust Ch.5–6 預習</div><div class="s-dur">30min</div></div>
+        <div class="slot sust" data-sid="sust-ch78" data-start="22:30" data-end="23:00"><div class="s-time">22:30–23:00</div><div class="s-name">Sust Ch.7–8 預習</div><div class="s-dur">30min</div></div>
+        <div class="slot rest" data-start="23:00" data-end="23:30">收尾</div>
       </div>
     </div>
-
     <!-- 4/11 -->
     <div class="day-col">
-      <div class="day-head">
-        <div class="dname">4/11 Sat</div>
-        <div class="dhours">10:30 – 23:00</div>
-      </div>
+      <div class="day-head"><div class="dname">4/11 Sat</div><div class="dhours">10:30–23:30</div></div>
       <div class="timeline" id="tl-0411">
-        <div class="slot acct" data-start="10:30" data-end="12:00"><div class="s-time">10:30–12:00</div><div class="s-name">Acct W10</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="12:00" data-end="13:30">12:00–13:30　午休 90min</div>
-        <div class="slot acct" data-start="13:30" data-end="15:00"><div class="s-time">13:30–15:00</div><div class="s-name">Acct W11</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="15:00" data-end="15:15">15:00–15:15　休息</div>
-        <div class="slot stat" data-start="15:15" data-end="16:45"><div class="s-time">15:15–16:45</div><div class="s-name">Stats W7+8</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="16:45" data-end="17:00">16:45–17:00　休息</div>
-        <div class="slot stat" data-start="17:00" data-end="19:00"><div class="s-time">17:00–19:00</div><div class="s-name">Stats Mock</div><div class="s-dur">2h</div></div>
-        <div class="slot rest" data-start="19:00" data-end="20:00">19:00–20:00　晚餐</div>
-        <div class="slot psych" data-start="20:00" data-end="21:00"><div class="s-time">20:00–21:00</div><div class="s-name">Psych 4 Leadership</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="21:00" data-end="21:15">21:00–21:15　休息</div>
-        <div class="slot psych" data-start="21:15" data-end="22:15"><div class="s-time">21:15–22:15</div><div class="s-name">Psych 5 Motivation</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="22:15" data-end="23:00">22:15–23:00　收尾</div>
+        <div class="slot acct" data-sid="acct-w10" data-start="10:30" data-end="12:00"><div class="s-time">10:30–12:00</div><div class="s-name">Acct W10</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="12:00" data-end="13:30">午休 90min</div>
+        <div class="slot acct" data-sid="acct-w11" data-start="13:30" data-end="15:00"><div class="s-time">13:30–15:00</div><div class="s-name">Acct W11</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="15:00" data-end="15:15">休息</div>
+        <div class="slot stat" data-sid="stat-w78" data-start="15:15" data-end="16:45"><div class="s-time">15:15–16:45</div><div class="s-name">Stats W7+8</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="16:45" data-end="17:00">休息</div>
+        <div class="slot stat" data-sid="stat-mock" data-start="17:00" data-end="19:00"><div class="s-time">17:00–19:00</div><div class="s-name">Stats Mock</div><div class="s-dur">2h</div></div>
+        <div class="slot rest" data-start="19:00" data-end="20:00">晚餐</div>
+        <div class="slot psych" data-sid="psych-4" data-start="20:00" data-end="21:00"><div class="s-time">20:00–21:00</div><div class="s-name">Psych 4 Leadership</div><div class="s-dur">1h</div></div>
+        <div class="slot rest" data-start="21:00" data-end="21:15">休息</div>
+        <div class="slot psych" data-sid="psych-5" data-start="21:15" data-end="22:15"><div class="s-time">21:15–22:15</div><div class="s-name">Psych 5 Motivation</div><div class="s-dur">1h</div></div>
+        <div class="slot sust" data-sid="sust-ch910" data-start="22:15" data-end="22:45"><div class="s-time">22:15–22:45</div><div class="s-name">Sust Ch.9–10 預習</div><div class="s-dur">30min</div></div>
+        <div class="slot sust" data-sid="sust-ch1113" data-start="22:45" data-end="23:15"><div class="s-time">22:45–23:15</div><div class="s-name">Sust Ch.11–13 預習</div><div class="s-dur">30min</div></div>
+        <div class="slot rest" data-start="23:15" data-end="23:30">收尾</div>
       </div>
     </div>
-
     <!-- 4/12 -->
     <div class="day-col">
-      <div class="day-head">
-        <div class="dname">4/12 Sun</div>
-        <div class="dhours">10:30 – 23:00</div>
-        <div class="dexam">EU Law 考前一天</div>
-      </div>
+      <div class="day-head"><div class="dname">4/12 Sun</div><div class="dhours">10:30–23:30</div><div class="dexam">EU Law 考前一天</div></div>
       <div class="timeline" id="tl-0412">
-        <div class="slot sprint" data-start="10:30" data-end="12:30"><div class="s-time">10:30–12:30</div><div class="s-name">EU Law 衝刺複習</div><div class="s-dur">2h</div></div>
-        <div class="slot rest" data-start="12:30" data-end="14:00">12:30–14:00　午休 90min</div>
-        <div class="slot acct" data-start="14:00" data-end="15:30"><div class="s-time">14:00–15:30</div><div class="s-name">Acct 全科整理</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="15:30" data-end="15:45">15:30–15:45　休息</div>
-        <div class="slot stat" data-start="15:45" data-end="17:15"><div class="s-time">15:45–17:15</div><div class="s-name">Stats 全科整理</div><div class="s-dur">1.5h</div></div>
-        <div class="slot rest" data-start="17:15" data-end="18:15">17:15–18:15　晚餐</div>
-        <div class="slot psych" data-start="18:15" data-end="19:15"><div class="s-time">18:15–19:15</div><div class="s-name">Psych 6 Identity</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="19:15" data-end="19:30">19:15–19:30　休息</div>
-        <div class="slot psych" data-start="19:30" data-end="20:30"><div class="s-time">19:30–20:30</div><div class="s-name">Psych 7 Group Processes</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="20:30" data-end="20:45">20:30–20:45　休息</div>
-        <div class="slot psych" data-start="20:45" data-end="21:45"><div class="s-time">20:45–21:45</div><div class="s-name">Psych 8 Prejudice</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="21:45" data-end="23:00">21:45–23:00　收尾</div>
+        <div class="slot sprint" data-sid="eu-sprint" data-start="10:30" data-end="12:30"><div class="s-time">10:30–12:30</div><div class="s-name">EU Law 衝刺複習</div><div class="s-dur">2h</div></div>
+        <div class="slot rest" data-start="12:30" data-end="14:00">午休 90min</div>
+        <div class="slot acct" data-sid="acct-review" data-start="14:00" data-end="15:30"><div class="s-time">14:00–15:30</div><div class="s-name">Acct 全科整理</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="15:30" data-end="15:45">休息</div>
+        <div class="slot stat" data-sid="stat-review" data-start="15:45" data-end="17:15"><div class="s-time">15:45–17:15</div><div class="s-name">Stats 全科整理</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="17:15" data-end="18:15">晚餐</div>
+        <div class="slot psych" data-sid="psych-6" data-start="18:15" data-end="19:15"><div class="s-time">18:15–19:15</div><div class="s-name">Psych 6 Identity</div><div class="s-dur">1h</div></div>
+        <div class="slot rest" data-start="19:15" data-end="19:30">休息</div>
+        <div class="slot psych" data-sid="psych-7" data-start="19:30" data-end="20:30"><div class="s-time">19:30–20:30</div><div class="s-name">Psych 7 Group Processes</div><div class="s-dur">1h</div></div>
+        <div class="slot rest" data-start="20:30" data-end="20:45">休息</div>
+        <div class="slot psych" data-sid="psych-8" data-start="20:45" data-end="21:45"><div class="s-time">20:45–21:45</div><div class="s-name">Psych 8 Prejudice</div><div class="s-dur">1h</div></div>
+        <div class="slot sust" data-sid="sust-sem12" data-start="21:45" data-end="22:15"><div class="s-time">21:45–22:15</div><div class="s-name">Sust Seminar 1+2 預習</div><div class="s-dur">30min</div></div>
+        <div class="slot sust" data-sid="sust-sem34" data-start="22:15" data-end="22:45"><div class="s-time">22:15–22:45</div><div class="s-name">Sust Seminar 3+4 預習</div><div class="s-dur">30min</div></div>
+        <div class="slot rest" data-start="22:45" data-end="23:30">收尾</div>
       </div>
     </div>
+  </div>
+  <footer>準備週每天睡前 Sust 預習（Ch.1–13 + Seminar 1–4 全覆蓋）· EU Law ① 1h · ② 1h · ③ 45min · ④ 1h</footer>
+</div>
 
-  </div><!-- /days-grid prep -->
-
-  <footer>EU Law ① 1h · ② Essay 1h · ③ 再次複習 45min · ④ Essay×2 1h = 3h45min/week · 三週共 11h15min</footer>
-</div><!-- /page-prep -->
-
-
-<!-- ══════════════ 考試週 4/13–4/17 ══════════════ -->
+<!-- ══════ 考試週 ══════ -->
 <div class="page" id="page-exam">
-
-  <div class="page-header">
-    <span class="subtitle">Apr 13 – 17　考試週</span>
-  </div>
-
-  <div class="priority-row">
-    <span>Priority</span>
-    <span class="pb law">Law</span><span class="arr">›</span>
-    <span class="pb stat">Stats</span><span class="arr">›</span>
-    <span class="pb acct">Acct</span><span class="arr">›</span>
-    <span class="pb psych">Psych</span><span class="arr">›</span>
-    <span class="pb sust">Sust</span><span class="arr">›</span>
-    <span class="pb cs">CS</span>
-  </div>
-
+  <div class="page-header"><span class="subtitle">Apr 13 – 17　考試週</span></div>
+  <div class="priority-row"><span>邏輯：考前讀那科 → 考試 → 空檔讀下一科</span></div>
   <div class="clock-row" id="clock-exam">--:--</div>
-
-  <div class="status-card" id="card-exam">
+  <div class="status-card">
     <div class="status-block">
       <label>目前 Session</label>
       <div class="val" id="exam-cur-name">—</div>
@@ -542,475 +329,348 @@ footer {
       <div class="sub">後開始</div>
     </div>
   </div>
-
-  <div class="days-grid cols-3" style="grid-template-columns:repeat(5,1fr)">
-
+  <div class="days-grid cols-5">
     <!-- 4/13 -->
     <div class="day-col">
-      <div class="day-head">
-        <div class="dname">4/13 Mon</div>
-        <div class="dhours">每天 5h</div>
-        <div class="dexam">EU Law 考試 10:00</div>
-      </div>
+      <div class="day-head"><div class="dname">4/13 Mon</div><div class="dexam">EU Law 考試 10:00</div></div>
       <div class="timeline" id="tl-0413">
-        <div class="slot sprint" data-start="08:00" data-end="10:00"><div class="s-time">08:00–10:00</div><div class="s-name">EU Law 衝刺複習</div><div class="s-dur">2h 考前</div></div>
-        <div class="slot exam-slot" data-start="10:00" data-end="12:00"><div class="s-time">10:00</div><div class="s-name">EU Law 考試</div></div>
+        <div class="slot sprint" data-sid="eu-sprint2" data-start="08:00" data-end="10:00"><div class="s-time">08:00–10:00</div><div class="s-name">EU Law 衝刺複習</div><div class="s-dur">2h 考前</div></div>
+        <div class="slot exam-slot" data-start="10:00" data-end="12:00"><div class="s-time">10:00</div><div class="s-name">✏️ EU Law 考試</div></div>
         <div class="slot rest" data-start="12:00" data-end="13:00">午休</div>
-        <div class="slot acct" data-start="13:00" data-end="14:00"><div class="s-time">13:00–14:00</div><div class="s-name">Acct W10</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="14:00" data-end="14:15">14:00–14:15　休息</div>
-        <div class="slot acct" data-start="14:15" data-end="15:15"><div class="s-time">14:15–15:15</div><div class="s-name">Acct W11</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="15:15" data-end="15:30">休息</div>
-        <div class="slot psych" data-start="15:30" data-end="16:30"><div class="s-time">15:30–16:30</div><div class="s-name">Psych 8 Prejudice</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="16:30" data-end="17:00">收尾</div>
+        <div class="slot sust" data-sid="sust-ch14r" data-start="13:00" data-end="14:30"><div class="s-time">13:00–14:30</div><div class="s-name">Sust Ch.1–4 複習</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="14:30" data-end="14:45">休息</div>
+        <div class="slot sust" data-sid="sust-ch59r" data-start="14:45" data-end="16:15"><div class="s-time">14:45–16:15</div><div class="s-name">Sust Ch.5–9 複習</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="16:15" data-end="17:00">收尾</div>
       </div>
     </div>
-
     <!-- 4/14 -->
     <div class="day-col">
-      <div class="day-head">
-        <div class="dname">4/14 Tue</div>
-        <div class="dhours">每天 5h</div>
-        <div class="dexam">Stats 10:00 · Sust 16:00</div>
-      </div>
+      <div class="day-head"><div class="dname">4/14 Tue</div><div class="dexam">Stats 10:00 · Sust 16:00</div></div>
       <div class="timeline" id="tl-0414">
-        <div class="slot sprint" data-start="08:00" data-end="10:00"><div class="s-time">08:00–10:00</div><div class="s-name">Stats 衝刺複習</div><div class="s-dur">2h 考前</div></div>
-        <div class="slot exam-slot" data-start="10:00" data-end="12:00"><div class="s-time">10:00</div><div class="s-name">Stats 考試</div></div>
+        <div class="slot sprint" data-sid="stat-sprint" data-start="08:00" data-end="10:00"><div class="s-time">08:00–10:00</div><div class="s-name">Stats 衝刺複習</div><div class="s-dur">2h 考前</div></div>
+        <div class="slot exam-slot" data-start="10:00" data-end="12:00"><div class="s-time">10:00</div><div class="s-name">✏️ Stats 考試</div></div>
         <div class="slot rest" data-start="12:00" data-end="13:00">午休</div>
-        <div class="slot sust" data-start="13:00" data-end="14:00"><div class="s-time">13:00–14:00</div><div class="s-name">Sust Ch.1-4</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="14:00" data-end="14:15">休息</div>
-        <div class="slot sust" data-start="14:15" data-end="15:15"><div class="s-time">14:15–15:15</div><div class="s-name">Sust Ch.5-9</div><div class="s-dur">1h</div></div>
-        <div class="slot sprint" data-start="15:15" data-end="16:00"><div class="s-time">15:15–16:00</div><div class="s-name">Sust 衝刺複習</div><div class="s-dur">45min 考前</div></div>
-        <div class="slot exam-slot" data-start="16:00" data-end="17:00"><div class="s-time">16:00</div><div class="s-name">Sust 考試</div></div>
+        <div class="slot sust" data-sid="sust-ch1013r" data-start="13:00" data-end="14:30"><div class="s-time">13:00–14:30</div><div class="s-name">Sust Ch.10–13 複習</div><div class="s-dur">1.5h</div></div>
+        <div class="slot rest" data-start="14:30" data-end="14:45">休息</div>
+        <div class="slot sprint" data-sid="sust-sprint" data-start="14:45" data-end="16:00"><div class="s-time">14:45–16:00</div><div class="s-name">Sust 衝刺複習</div><div class="s-dur">1h15 考前</div></div>
+        <div class="slot exam-slot" data-start="16:00" data-end="17:30"><div class="s-time">16:00</div><div class="s-name">✏️ Sust 考試</div></div>
       </div>
     </div>
-
     <!-- 4/15 -->
     <div class="day-col">
-      <div class="day-head">
-        <div class="dname">4/15 Wed</div>
-        <div class="dhours">每天 5h</div>
-        <div class="dexam">Acct 考試 10:00</div>
-      </div>
+      <div class="day-head"><div class="dname">4/15 Wed</div><div class="dexam">Acct 考試 10:00</div></div>
       <div class="timeline" id="tl-0415">
-        <div class="slot sprint" data-start="08:00" data-end="10:00"><div class="s-time">08:00–10:00</div><div class="s-name">Acct 衝刺複習</div><div class="s-dur">2h 考前</div></div>
-        <div class="slot exam-slot" data-start="10:00" data-end="12:00"><div class="s-time">10:00</div><div class="s-name">Acct 考試</div></div>
+        <div class="slot sprint" data-sid="acct-sprint" data-start="08:00" data-end="10:00"><div class="s-time">08:00–10:00</div><div class="s-name">Acct 衝刺複習</div><div class="s-dur">2h 考前</div></div>
+        <div class="slot exam-slot" data-start="10:00" data-end="12:00"><div class="s-time">10:00</div><div class="s-name">✏️ Acct 考試</div></div>
         <div class="slot rest" data-start="12:00" data-end="13:00">午休</div>
-        <div class="slot sust" data-start="13:00" data-end="14:00"><div class="s-time">13:00–14:00</div><div class="s-name">Sust Ch.10-13</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="14:00" data-end="14:15">休息</div>
-        <div class="slot sust" data-start="14:15" data-end="15:15"><div class="s-time">14:15–15:15</div><div class="s-name">Sust Seminar 1+2</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="15:15" data-end="15:30">休息</div>
-        <div class="slot cs" data-start="15:30" data-end="16:30"><div class="s-time">15:30–16:30</div><div class="s-name">Excel Session 1</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="16:30" data-end="17:00">收尾</div>
+        <div class="slot psych" data-sid="psych-review" data-start="13:00" data-end="14:30"><div class="s-time">13:00–14:30</div><div class="s-name">Psych 全科複習</div><div class="s-dur">1.5h 為明天準備</div></div>
+        <div class="slot rest" data-start="14:30" data-end="14:45">休息</div>
+        <div class="slot cs" data-sid="excel-1" data-start="14:45" data-end="15:45"><div class="s-time">14:45–15:45</div><div class="s-name">Excel Session 1</div><div class="s-dur">1h</div></div>
+        <div class="slot rest" data-start="15:45" data-end="16:00">收尾</div>
       </div>
     </div>
-
     <!-- 4/16 -->
     <div class="day-col">
-      <div class="day-head">
-        <div class="dname">4/16 Thu</div>
-        <div class="dhours">每天 5h</div>
-        <div class="dexam">Psych 考試 10:00</div>
-      </div>
+      <div class="day-head"><div class="dname">4/16 Thu</div><div class="dexam">Psych 考試 10:00</div></div>
       <div class="timeline" id="tl-0416">
-        <div class="slot sprint" data-start="08:00" data-end="10:00"><div class="s-time">08:00–10:00</div><div class="s-name">Psych 衝刺複習</div><div class="s-dur">2h 考前</div></div>
-        <div class="slot exam-slot" data-start="10:00" data-end="12:00"><div class="s-time">10:00</div><div class="s-name">Psych 考試</div></div>
+        <div class="slot sprint" data-sid="psych-sprint" data-start="08:00" data-end="10:00"><div class="s-time">08:00–10:00</div><div class="s-name">Psych 衝刺複習</div><div class="s-dur">2h 考前</div></div>
+        <div class="slot exam-slot" data-start="10:00" data-end="12:00"><div class="s-time">10:00</div><div class="s-name">✏️ Psych 考試</div></div>
         <div class="slot rest" data-start="12:00" data-end="13:00">午休</div>
-        <div class="slot sust" data-start="13:00" data-end="14:00"><div class="s-time">13:00–14:00</div><div class="s-name">Sust Seminar 3+4</div><div class="s-dur">1h</div></div>
+        <div class="slot cs" data-sid="excel-2" data-start="13:00" data-end="14:00"><div class="s-time">13:00–14:00</div><div class="s-name">Excel Session 2</div><div class="s-dur">1h</div></div>
         <div class="slot rest" data-start="14:00" data-end="14:15">休息</div>
-        <div class="slot cs" data-start="14:15" data-end="15:15"><div class="s-time">14:15–15:15</div><div class="s-name">Excel Session 2</div><div class="s-dur">1h</div></div>
+        <div class="slot cs" data-sid="excel-3" data-start="14:15" data-end="15:15"><div class="s-time">14:15–15:15</div><div class="s-name">Excel Session 3</div><div class="s-dur">1h</div></div>
         <div class="slot rest" data-start="15:15" data-end="15:30">休息</div>
-        <div class="slot cs" data-start="15:30" data-end="16:30"><div class="s-time">15:30–16:30</div><div class="s-name">Excel Session 3</div><div class="s-dur">1h</div></div>
+        <div class="slot cs" data-sid="excel-4" data-start="15:30" data-end="16:30"><div class="s-time">15:30–16:30</div><div class="s-name">Excel Session 4</div><div class="s-dur">1h</div></div>
         <div class="slot rest" data-start="16:30" data-end="17:00">收尾</div>
       </div>
     </div>
-
     <!-- 4/17 -->
     <div class="day-col">
-      <div class="day-head">
-        <div class="dname">4/17 Fri</div>
-        <div class="dhours">每天 5h</div>
-        <div class="dexam">CS 考試 10:00</div>
-      </div>
+      <div class="day-head"><div class="dname">4/17 Fri</div><div class="dexam">CS 考試 10:00</div></div>
       <div class="timeline" id="tl-0417">
-        <div class="slot cs" data-start="08:00" data-end="09:00"><div class="s-time">08:00–09:00</div><div class="s-name">Excel Session 4</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="09:00" data-end="09:15">休息</div>
-        <div class="slot sprint" data-start="09:15" data-end="10:00"><div class="s-time">09:15–10:00</div><div class="s-name">CS 衝刺複習</div><div class="s-dur">45min 考前</div></div>
-        <div class="slot exam-slot" data-start="10:00" data-end="12:00"><div class="s-time">10:00</div><div class="s-name">CS 考試</div></div>
-        <div class="slot rest" data-start="12:00" data-end="13:00">午休</div>
-        <div class="slot cs" data-start="13:00" data-end="14:00"><div class="s-time">13:00–14:00</div><div class="s-name">PowerPoint Session</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="14:00" data-end="14:15">休息</div>
-        <div class="slot cs" data-start="14:15" data-end="15:15"><div class="s-time">14:15–15:15</div><div class="s-name">Word Session</div><div class="s-dur">1h</div></div>
-        <div class="slot rest" data-start="15:15" data-end="16:00">收尾</div>
+        <div class="slot cs" data-sid="ppt" data-start="07:30" data-end="08:30"><div class="s-time">07:30–08:30</div><div class="s-name">PowerPoint Session</div><div class="s-dur">1h</div></div>
+        <div class="slot rest" data-start="08:30" data-end="08:45">休息</div>
+        <div class="slot cs" data-sid="word" data-start="08:45" data-end="09:30"><div class="s-time">08:45–09:30</div><div class="s-name">Word Session</div><div class="s-dur">45min</div></div>
+        <div class="slot sprint" data-sid="cs-sprint" data-start="09:30" data-end="10:00"><div class="s-time">09:30–10:00</div><div class="s-name">CS 衝刺複習</div><div class="s-dur">30min 考前</div></div>
+        <div class="slot exam-slot" data-start="10:00" data-end="12:00"><div class="s-time">10:00</div><div class="s-name">✏️ CS 考試</div></div>
+        <div class="slot rest" data-start="12:00" data-end="17:00">🎉 考完！</div>
       </div>
     </div>
+  </div>
+  <footer>考試週：考前讀那科 → 考試 → 空檔讀下一科 · CS 全部在 4/16 考後 + 4/17 考前完成</footer>
+</div>
 
-  </div><!-- /days-grid exam -->
-
-  <footer>考試週每天 5h · 衝刺複習安排考前 · 考後推進 Sust & CS</footer>
-</div><!-- /page-exam -->
-
+<!-- ══════ 各科進度 ══════ -->
 <div class="page" id="page-progress">
-
-  <div class="page-header">
-    <span class="subtitle">All Subjects · 各科進度</span>
+  <div class="page-header"><span class="subtitle">各科進度</span></div>
+  <div class="prog-wrap">
+    <div class="prog-summary" id="prog-summary"></div>
+    <div style="overflow-x:auto;">
+      <div class="prog-cols" id="prog-cols"></div>
+    </div>
   </div>
-
-  <div class="progress-shell">
-    <div class="progress-summary" id="progress-summary"></div>
-    <div class="progress-grid" id="progress-grid"></div>
-  </div>
-
-  <footer>進度頁會直接讀取目前時間表卡片，自動整理每一科的待讀項目與已完成項目。</footer>
-</div><!-- /page-progress -->
+  <footer>勾選任務會同步到準備週／考試週的時間表</footer>
+</div>
 
 <script>
-const prepSchedule = [
-  ["0408","13:00","14:00","EU W1 ① 初次複習"],
-  ["0408","14:00","15:00","EU W1 ② 初次 Essay"],
-  ["0408","15:15","16:00","EU W10+11 ③ 再次複習"],
-  ["0408","16:15","17:15","EU W10+11 ④ Essay 第二次"],
-  ["0408","18:15","19:45","Acct W4-6"],
-  ["0408","20:00","21:30","Stats W1+2"],
-  ["0408","21:45","22:45","Psych 1 Emotions"],
-  ["0409","12:00","13:00","EU W8 ① 初次複習"],
-  ["0409","14:00","15:00","EU W8 ② 初次 Essay"],
-  ["0409","15:15","16:00","EU W8 ③ 再次複習"],
-  ["0409","16:15","17:15","EU W8 ④ Essay 第二次"],
-  ["0409","18:15","19:45","Acct W7"],
-  ["0409","20:00","21:30","Stats W3+4"],
-  ["0409","21:45","22:45","Psych 2 Culture"],
-  ["0410","12:00","12:45","EU W1 ③ 再次複習"],
-  ["0410","13:00","14:00","EU W1 ④ Essay 第二次"],
-  ["0410","15:00","16:30","Acct W8"],
-  ["0410","16:45","18:15","Acct W9"],
-  ["0410","19:15","20:45","Stats W5+6"],
-  ["0410","21:00","22:00","Psych 3 Social Influence"],
-  ["0411","10:30","12:00","Acct W10"],
-  ["0411","13:30","15:00","Acct W11"],
-  ["0411","15:15","16:45","Stats W7+8"],
-  ["0411","17:00","19:00","Stats Mock"],
-  ["0411","20:00","21:00","Psych 4 Leadership"],
-  ["0411","21:15","22:15","Psych 5 Motivation"],
-  ["0412","10:30","12:30","EU Law 衝刺複習"],
-  ["0412","14:00","15:30","Acct 全科整理"],
-  ["0412","15:45","17:15","Stats 全科整理"],
-  ["0412","18:15","19:15","Psych 6 Identity"],
-  ["0412","19:30","20:30","Psych 7 Group Processes"],
-  ["0412","20:45","21:45","Psych 8 Prejudice"],
+// ── schedule data (for status card) ──
+const prepSchedule=[
+  ["0408","13:00","14:00","EU W1 ① 初次複習"],["0408","14:00","15:00","EU W1 ② 初次 Essay"],
+  ["0408","15:15","16:00","EU W10+11 ③ 再次複習"],["0408","16:15","17:15","EU W10+11 ④ Essay 第二次"],
+  ["0408","18:15","19:45","Acct W4-6"],["0408","20:00","21:30","Stats W1+2"],
+  ["0408","21:45","22:45","Psych 1 Emotions"],["0408","22:45","23:15","Sust Ch.1–2 預習"],
+  ["0409","12:00","13:00","EU W8 ① 初次複習"],["0409","14:00","15:00","EU W8 ② 初次 Essay"],
+  ["0409","15:15","16:00","EU W8 ③ 再次複習"],["0409","16:15","17:15","EU W8 ④ Essay 第二次"],
+  ["0409","18:15","19:45","Acct W7"],["0409","20:00","21:30","Stats W3+4"],
+  ["0409","21:45","22:45","Psych 2 Culture"],["0409","22:45","23:15","Sust Ch.3–4 預習"],
+  ["0410","12:00","12:45","EU W1 ③ 再次複習"],["0410","13:00","14:00","EU W1 ④ Essay 第二次"],
+  ["0410","15:00","16:30","Acct W8"],["0410","16:45","18:15","Acct W9"],
+  ["0410","19:15","20:45","Stats W5+6"],["0410","21:00","22:00","Psych 3 Social Influence"],
+  ["0410","22:00","22:30","Sust Ch.5–6 預習"],["0410","22:30","23:00","Sust Ch.7–8 預習"],
+  ["0411","10:30","12:00","Acct W10"],["0411","13:30","15:00","Acct W11"],
+  ["0411","15:15","16:45","Stats W7+8"],["0411","17:00","19:00","Stats Mock"],
+  ["0411","20:00","21:00","Psych 4 Leadership"],["0411","21:15","22:15","Psych 5 Motivation"],
+  ["0411","22:15","22:45","Sust Ch.9–10 預習"],["0411","22:45","23:15","Sust Ch.11–13 預習"],
+  ["0412","10:30","12:30","EU Law 衝刺複習"],["0412","14:00","15:30","Acct 全科整理"],
+  ["0412","15:45","17:15","Stats 全科整理"],["0412","18:15","19:15","Psych 6 Identity"],
+  ["0412","19:30","20:30","Psych 7 Group Processes"],["0412","20:45","21:45","Psych 8 Prejudice"],
+  ["0412","21:45","22:15","Sust Seminar 1+2 預習"],["0412","22:15","22:45","Sust Seminar 3+4 預習"],
 ];
-
-const examSchedule = [
-  ["0413","08:00","10:00","EU Law 衝刺複習"],
-  ["0413","13:00","14:00","Acct W10"],
-  ["0413","14:15","15:15","Acct W11"],
-  ["0413","15:30","16:30","Psych 8 Prejudice"],
-  ["0414","08:00","10:00","Stats 衝刺複習"],
-  ["0414","13:00","14:00","Sust Ch.1-4"],
-  ["0414","14:15","15:15","Sust Ch.5-9"],
-  ["0414","15:15","16:00","Sust 衝刺複習"],
-  ["0415","08:00","10:00","Acct 衝刺複習"],
-  ["0415","13:00","14:00","Sust Ch.10-13"],
-  ["0415","14:15","15:15","Sust Seminar 1+2"],
-  ["0415","15:30","16:30","Excel Session 1"],
-  ["0416","08:00","10:00","Psych 衝刺複習"],
-  ["0416","13:00","14:00","Sust Seminar 3+4"],
-  ["0416","14:15","15:15","Excel Session 2"],
-  ["0416","15:30","16:30","Excel Session 3"],
-  ["0417","08:00","09:00","Excel Session 4"],
-  ["0417","09:15","10:00","CS 衝刺複習"],
-  ["0417","13:00","14:00","PowerPoint Session"],
-  ["0417","14:15","15:15","Word Session"],
+const examSchedule=[
+  ["0413","08:00","10:00","EU Law 衝刺複習"],["0413","13:00","14:30","Sust Ch.1–4 複習"],
+  ["0413","14:45","16:15","Sust Ch.5–9 複習"],["0414","08:00","10:00","Stats 衝刺複習"],
+  ["0414","13:00","14:30","Sust Ch.10–13 複習"],["0414","14:45","16:00","Sust 衝刺複習"],
+  ["0415","08:00","10:00","Acct 衝刺複習"],["0415","13:00","14:30","Psych 全科複習"],
+  ["0415","14:45","15:45","Excel Session 1"],["0416","08:00","10:00","Psych 衝刺複習"],
+  ["0416","13:00","14:00","Excel Session 2"],["0416","14:15","15:15","Excel Session 3"],
+  ["0416","15:30","16:30","Excel Session 4"],["0417","07:30","08:30","PowerPoint Session"],
+  ["0417","08:45","09:30","Word Session"],["0417","09:30","10:00","CS 衝刺複習"],
 ];
-
-function toMins(hhmm) {
-  const [h,m] = hhmm.split(':').map(Number); return h*60+m;
-}
-function fmtDur(mins) {
-  if (mins<=0) return '0min';
-  const h=Math.floor(mins/60), m=mins%60;
-  if(h===0) return m+'min'; if(m===0) return h+'h'; return h+'h '+m+'min';
-}
-function fmtTime(d) {
-  return d.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});
-}
-function getMMDD(d) {
-  return String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
-}
-
-function updateStatus(schedule, dates, prefix, clockId) {
-  const now = new Date();
-  const mmdd = getMMDD(now);
-  const nowMins = now.getHours()*60+now.getMinutes();
-  document.getElementById(clockId).textContent = '現在時間 '+fmtTime(now);
-
-  const todaySessions = schedule.filter(s=>s[0]===mmdd);
-  let cur=null, next=null;
-  for(const s of todaySessions) {
-    if(nowMins>=toMins(s[1])&&nowMins<toMins(s[2])){cur=s;break;}
-  }
-  for(const s of todaySessions) {
-    if(toMins(s[1])>nowMins){next=s;break;}
-  }
-  if(!next){
-    const idx=dates.indexOf(mmdd);
-    if(idx>=0&&idx<dates.length-1){
-      const tm=schedule.filter(s=>s[0]===dates[idx+1]);
-      if(tm.length) next=tm[0];
-    }
-  }
-  if(cur){
-    document.getElementById(prefix+'-cur-name').textContent=cur[3];
-    document.getElementById(prefix+'-cur-time').textContent=cur[1]+' – '+cur[2];
-    document.getElementById(prefix+'-cur-left').textContent=fmtDur(toMins(cur[2])-nowMins);
-  } else {
-    document.getElementById(prefix+'-cur-name').textContent='休息 / 空檔';
-    document.getElementById(prefix+'-cur-time').textContent='—';
-    document.getElementById(prefix+'-cur-left').textContent='—';
-  }
-  if(next){
-    document.getElementById(prefix+'-next-name').textContent=next[3];
-    document.getElementById(prefix+'-next-time').textContent=next[1]+' – '+next[2];
-    const diff=next[0]===mmdd?toMins(next[1])-nowMins:(24*60-nowMins)+toMins(next[1]);
-    document.getElementById(prefix+'-next-left').textContent=fmtDur(Math.max(0,diff));
-  } else {
-    document.getElementById(prefix+'-next-name').textContent='計劃結束';
-    document.getElementById(prefix+'-next-time').textContent='—';
-    document.getElementById(prefix+'-next-left').textContent='—';
-  }
-}
-
-function drawNowLine(schedule, dates) {
-  document.querySelectorAll('.now-line,.now-label').forEach(e=>e.remove());
-  const now=new Date();
-  const mmdd=getMMDD(now);
-  if(!dates.includes(mmdd)) return;
-  const nowMins=now.getHours()*60+now.getMinutes();
-  const tl=document.getElementById('tl-'+mmdd);
-  if(!tl) return;
-  const slots=[...tl.querySelectorAll('[data-start][data-end]')]
-    .filter(s=>s.dataset.start!==s.dataset.end)
-    .map(s=>({
-      el:s,
-      start:toMins(s.dataset.start),
-      end:toMins(s.dataset.end)
-    }))
-    .sort((a,b)=>a.start-b.start);
-  if(!slots.length) return;
-  let dayStart=99999,dayEnd=0;
-  slots.forEach(s=>{
-    if(s.start<dayStart) dayStart=s.start;
-    if(s.end>dayEnd) dayEnd=s.end;
-  });
-  if(nowMins<dayStart||nowMins>dayEnd) return;
-
-  let topPx=null;
-  const currentSlot=slots.find(s=>nowMins>=s.start&&nowMins<=s.end);
-
-  if(currentSlot){
-    const slotDuration=Math.max(1,currentSlot.end-currentSlot.start);
-    const ratio=(nowMins-currentSlot.start)/slotDuration;
-    topPx=currentSlot.el.offsetTop+(ratio*currentSlot.el.offsetHeight);
-  } else {
-    for(let i=0;i<slots.length-1;i++){
-      const prev=slots[i];
-      const next=slots[i+1];
-      if(nowMins>prev.end&&nowMins<next.start){
-        const gapDuration=next.start-prev.end;
-        const ratio=(nowMins-prev.end)/gapDuration;
-        const prevBottom=prev.el.offsetTop+prev.el.offsetHeight;
-        topPx=prevBottom+(ratio*(next.el.offsetTop-prevBottom));
-        break;
-      }
-    }
-  }
-
-  if(topPx===null) return;
-  topPx=Math.max(0,Math.min(topPx,tl.scrollHeight));
-  const line=document.createElement('div'); line.className='now-line'; line.style.top=topPx+'px';
-  const label=document.createElement('div'); label.className='now-label'; label.style.top=topPx+'px'; label.textContent=fmtTime(now);
-  tl.appendChild(line); tl.appendChild(label);
-}
-
 const prepDates=['0408','0409','0410','0411','0412'];
 const examDates=['0413','0414','0415','0416','0417'];
-const subjectMeta = {
-  law:   { title: 'EU Law', slotClass: 'law1' },
-  acct:  { title: 'Acct',   slotClass: 'acct' },
-  stat:  { title: 'Stats',  slotClass: 'stat' },
-  psych: { title: 'Psych',  slotClass: 'psych' },
-  sust:  { title: 'Sust',   slotClass: 'sust' },
-  cs:    { title: 'CS',     slotClass: 'cs' },
-};
 
-function escapeHtml(text) {
-  return String(text ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
+// ── subject definitions ──
+const SUBJECTS=[
+  {key:'law',  label:'EU Law', cls:'c-law',  barColor:'#0a2d6e'},
+  {key:'acct', label:'Acct',   cls:'c-acct', barColor:'#1a5c10'},
+  {key:'stat', label:'Stats',  cls:'c-stat', barColor:'#5a4a0a'},
+  {key:'psych',label:'Psych',  cls:'c-psych',barColor:'#6a1a5a'},
+  {key:'sust', label:'Sust',   cls:'c-sust', barColor:'#0a4a44'},
+  {key:'cs',   label:'CS',     cls:'c-cs',   barColor:'#6a3010'},
+];
 
-function detectSubjectKey(slot, label, name) {
-  if ([...slot.classList].some(cls => cls.startsWith('law'))) return 'law';
-  if (slot.classList.contains('acct')) return 'acct';
-  if (slot.classList.contains('stat')) return 'stat';
-  if (slot.classList.contains('psych')) return 'psych';
-  if (slot.classList.contains('sust')) return 'sust';
-  if (slot.classList.contains('cs')) return 'cs';
-
-  const text = `${label} ${name}`.trim();
-  if (text.startsWith('EU') || text.includes('EU Law')) return 'law';
-  if (text.startsWith('Acct')) return 'acct';
-  if (text.startsWith('Stats')) return 'stat';
-  if (text.startsWith('Psych')) return 'psych';
-  if (text.startsWith('Sust')) return 'sust';
-  if (text.startsWith('CS') || text.startsWith('Excel') || text.startsWith('Word') || text.startsWith('PowerPoint')) return 'cs';
-
+// ── detect subject from slot element ──
+function detectKey(slot){
+  const cl=[...slot.classList];
+  if(cl.some(c=>c.startsWith('law')))return'law';
+  if(cl.includes('acct'))return'acct';
+  if(cl.includes('stat'))return'stat';
+  if(cl.includes('psych'))return'psych';
+  if(cl.includes('sust'))return'sust';
+  if(cl.includes('cs'))return'cs';
+  if(cl.includes('sprint')){
+    const n=slot.querySelector('.s-name')?.textContent||'';
+    if(n.includes('EU')||n.includes('Law'))return'law';
+    if(n.includes('Stats')||n.includes('Stat'))return'stat';
+    if(n.includes('Acct'))return'acct';
+    if(n.includes('Psych'))return'psych';
+    if(n.includes('Sust'))return'sust';
+    if(n.includes('CS')||n.includes('Excel')||n.includes('Word')||n.includes('PowerPoint'))return'cs';
+  }
   return null;
 }
 
-function getProgressSlotClass(slot, subjectKey) {
-  const classes = ['law1', 'law2', 'law3', 'law4', 'acct', 'stat', 'psych', 'sust', 'cs', 'sprint', 'done'];
-  const match = classes.find(cls => slot.classList.contains(cls));
-  return match || subjectMeta[subjectKey]?.slotClass || 'law1';
+// ── collect all task slots (with data-sid) ──
+function collectTasks(){
+  return[...document.querySelectorAll('.timeline .slot[data-sid]')]
+    .filter(s=>!s.classList.contains('rest')&&!s.classList.contains('exam-slot'))
+    .map(slot=>{
+      const sid=slot.dataset.sid;
+      const key=detectKey(slot);
+      if(!key)return null;
+      const label=slot.querySelector('.s-label')?.textContent.trim()||'';
+      const name=slot.querySelector('.s-name')?.textContent.trim()||'';
+      const time=slot.querySelector('.s-time')?.textContent.trim()||'';
+      const dur=slot.querySelector('.s-dur')?.textContent.trim()||'';
+      const dayName=slot.closest('.day-col')?.querySelector('.dname')?.textContent.replace(' 今天','').trim()||'';
+      const tlId=slot.closest('.timeline')?.id||'';
+      const mmdd=tlId.replace('tl-','');
+      const startMins=slot.dataset.start?toMins(slot.dataset.start):0;
+      return{sid,key,label,name,time,dur,dayName,mmdd,startMins,el:slot};
+    }).filter(Boolean);
 }
 
-function collectProgressItems() {
-  return [...document.querySelectorAll('.timeline .slot')]
-    .filter(slot => !slot.classList.contains('rest') && !slot.classList.contains('exam-slot'))
-    .map(slot => {
-      const label = slot.querySelector('.s-label')?.textContent.trim() || '';
-      const name = slot.querySelector('.s-name')?.textContent.trim() || '';
-      const time = slot.querySelector('.s-time')?.textContent.trim() || '';
-      const duration = slot.querySelector('.s-dur')?.textContent.trim() || '';
-      const subjectKey = detectSubjectKey(slot, label, name);
-      if (!subjectKey) return null;
+// ── checked state (in-memory) ──
+const checkedSet=new Set();
 
-      const timeline = slot.closest('.timeline');
-      const dayName = slot.closest('.day-col')?.querySelector('.dname')?.textContent.replace(' 今天', '').trim() || '';
-
-      return {
-        subjectKey,
-        slotClass: getProgressSlotClass(slot, subjectKey),
-        done: slot.classList.contains('done'),
-        label,
-        name,
-        time,
-        duration,
-        dayName,
-        mmdd: timeline?.id?.replace('tl-', '') || '',
-        start: slot.dataset.start || '00:00',
-      };
-    })
-    .filter(Boolean);
+// Pre-populate already-done slots
+function initChecked(){
+  document.querySelectorAll('.timeline .slot[data-sid].done').forEach(s=>{
+    checkedSet.add(s.dataset.sid);
+  });
 }
 
-function compareProgressItems(a, b) {
-  if (a.done !== b.done) return Number(a.done) - Number(b.done);
-  if (a.mmdd !== b.mmdd) return a.mmdd.localeCompare(b.mmdd);
-  return toMins(a.start) - toMins(b.start);
+// Apply done class to all slots with matching sid
+function applyDone(sid,isDone){
+  document.querySelectorAll(`.slot[data-sid="${sid}"]`).forEach(slot=>{
+    if(isDone) slot.classList.add('done');
+    else slot.classList.remove('done');
+  });
 }
 
-function renderProgressItem(item) {
-  const metaLine = [item.dayName, item.time].filter(Boolean).join(' · ');
-  const labelHtml = item.label ? `<div class="s-label">${escapeHtml(item.label)}</div>` : '';
-  const durationHtml = item.duration && !item.done
-    ? `<div class="s-dur">${escapeHtml(item.duration)}</div>`
-    : '';
+function toMins(hhmm){const[h,m]=hhmm.split(':').map(Number);return h*60+m;}
+function fmtDur(mins){if(mins<=0)return'0min';const h=Math.floor(mins/60),m=mins%60;if(h===0)return m+'min';if(m===0)return h+'h';return h+'h '+m+'min';}
+function fmtTime(d){return d.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});}
+function getMMDD(d){return String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');}
 
-  return `
-    <div class="slot ${escapeHtml(item.slotClass)}${item.done ? ' done' : ''}">
-      ${metaLine ? `<div class="s-time">${escapeHtml(metaLine)}</div>` : ''}
-      ${labelHtml}
-      <div class="s-name">${escapeHtml(item.name)}</div>
-      ${durationHtml}
-    </div>
-  `;
-}
+// ── progress page render ──
+function renderProgress(){
+  const tasks=collectTasks();
+  const total=tasks.length;
+  const doneCount=tasks.filter(t=>checkedSet.has(t.sid)).length;
+  const pending=total-doneCount;
 
-function renderProgressPage() {
-  const items = collectProgressItems();
-  const totalCount = items.length;
-  const doneCount = items.filter(item => item.done).length;
-  const pendingCount = totalCount - doneCount;
-  const pendingSubjects = Object.keys(subjectMeta).filter(key => items.some(item => item.subjectKey === key && !item.done));
-
-  document.getElementById('progress-summary').innerHTML = `
-    <div class="progress-summary-card">
-      <label>總任務</label>
-      <div class="val">${totalCount}</div>
-      <div class="sub">時間表同步項目</div>
-    </div>
-    <div class="progress-summary-card">
-      <label>已完成</label>
-      <div class="val">${doneCount}</div>
-      <div class="sub">已標示完成的項目</div>
-    </div>
-    <div class="progress-summary-card">
-      <label>未完成</label>
-      <div class="val">${pendingCount}</div>
-      <div class="sub">${pendingSubjects.length} 科仍有待完成項目</div>
-    </div>
+  // summary bar
+  document.getElementById('prog-summary').innerHTML=`
+    <div class="prog-summary-card"><label>總任務</label><div class="sv">${total}</div><div class="ss">全部讀書項目</div></div>
+    <div class="prog-summary-card"><label>已完成</label><div class="sv" style="color:#1a7a10">${doneCount}</div><div class="ss">勾選完成</div></div>
+    <div class="prog-summary-card"><label>未完成</label><div class="sv" style="color:var(--accent)">${pending}</div><div class="ss">待讀項目</div></div>
   `;
 
-  document.getElementById('progress-grid').innerHTML = Object.entries(subjectMeta).map(([key, meta]) => {
-    const subjectItems = items
-      .filter(item => item.subjectKey === key)
-      .sort(compareProgressItems);
-    const subjectDoneCount = subjectItems.filter(item => item.done).length;
+  // 6 cols
+  const colsEl=document.getElementById('prog-cols');
+  colsEl.innerHTML='';
 
-    return `
-      <section class="subject-card">
-        <div class="subject-head">
-          <div>
-            <div class="title">${meta.title}</div>
-            <div class="meta">${subjectItems.length} 項讀書任務</div>
-          </div>
-          <div class="count">
-            <strong>${subjectDoneCount} / ${subjectItems.length}</strong>
-            <div class="count-label">完成</div>
-          </div>
-        </div>
-        <div class="task-list">
-          ${subjectItems.length
-            ? subjectItems.map(renderProgressItem).join('')
-            : '<div class="task-empty">目前沒有排入任務</div>'}
-        </div>
-      </section>
+  SUBJECTS.forEach(sub=>{
+    const subTasks=tasks
+      .filter(t=>t.key===sub.key)
+      .sort((a,b)=>{
+        const ad=checkedSet.has(a.sid),bd=checkedSet.has(b.sid);
+        if(ad!==bd)return Number(ad)-Number(bd);
+        if(a.mmdd!==b.mmdd)return a.mmdd.localeCompare(b.mmdd);
+        return a.startMins-b.startMins;
+      });
+    const dc=subTasks.filter(t=>checkedSet.has(t.sid)).length;
+    const pct=subTasks.length?Math.round(dc/subTasks.length*100):0;
+
+    const col=document.createElement('div');
+    col.className=`prog-col ${sub.cls}`;
+
+    const head=document.createElement('div');
+    head.className='prog-col-head';
+    head.innerHTML=`
+      <div class="pch-title">${sub.label}</div>
+      <div class="pch-count">${dc} / ${subTasks.length} 完成</div>
+      <div class="pch-bar"><div class="pch-bar-fill" style="width:${pct}%;background:${sub.barColor}"></div></div>
     `;
-  }).join('');
+    col.appendChild(head);
+
+    subTasks.forEach(task=>{
+      const isDone=checkedSet.has(task.sid);
+      const item=document.createElement('div');
+      item.className='task-item'+(isDone?' is-done':'');
+      item.dataset.sid=task.sid;
+
+      const meta=[task.dayName,task.time].filter(Boolean).join(' · ');
+      item.innerHTML=`
+        <input type="checkbox" ${isDone?'checked':''}>
+        <div class="ti-body">
+          ${meta?`<div class="ti-meta">${meta}</div>`:''}
+          ${task.label?`<div class="ti-label">${task.label}</div>`:''}
+          <div class="ti-name">${task.name}</div>
+          ${task.dur&&!isDone?`<div class="ti-dur">${task.dur}</div>`:''}
+        </div>
+      `;
+
+      const cb=item.querySelector('input');
+      cb.addEventListener('change',e=>{
+        e.stopPropagation();
+        const sid=item.dataset.sid;
+        if(cb.checked){checkedSet.add(sid);}else{checkedSet.delete(sid);}
+        applyDone(sid,cb.checked);
+        renderProgress(); // re-render to reorder
+      });
+      item.addEventListener('click',e=>{
+        if(e.target===cb)return;
+        cb.checked=!cb.checked;
+        cb.dispatchEvent(new Event('change'));
+      });
+
+      col.appendChild(item);
+    });
+
+    colsEl.appendChild(col);
+  });
 }
 
-function update() {
-  updateStatus(prepSchedule, prepDates, 'prep', 'clock-prep');
-  updateStatus(examSchedule, examDates, 'exam', 'clock-exam');
-  const activeTab = document.querySelector('.page.active').id;
-  if(activeTab==='page-prep') drawNowLine(prepSchedule, prepDates);
-  else if(activeTab==='page-exam') drawNowLine(examSchedule, examDates);
+// ── status card ──
+function updateStatus(schedule,dates,prefix,clockId){
+  const now=new Date(),mmdd=getMMDD(now),nowMins=now.getHours()*60+now.getMinutes();
+  document.getElementById(clockId).textContent='現在時間 '+fmtTime(now);
+  const today=schedule.filter(s=>s[0]===mmdd);
+  let cur=null,next=null;
+  for(const s of today){if(nowMins>=toMins(s[1])&&nowMins<toMins(s[2])){cur=s;break;}}
+  for(const s of today){if(toMins(s[1])>nowMins){next=s;break;}}
+  if(!next){const idx=dates.indexOf(mmdd);if(idx>=0&&idx<dates.length-1){const tm=schedule.filter(s=>s[0]===dates[idx+1]);if(tm.length)next=tm[0];}}
+  if(cur){document.getElementById(prefix+'-cur-name').textContent=cur[3];document.getElementById(prefix+'-cur-time').textContent=cur[1]+' – '+cur[2];document.getElementById(prefix+'-cur-left').textContent=fmtDur(toMins(cur[2])-nowMins);}
+  else{document.getElementById(prefix+'-cur-name').textContent='休息 / 空檔';document.getElementById(prefix+'-cur-time').textContent='—';document.getElementById(prefix+'-cur-left').textContent='—';}
+  if(next){document.getElementById(prefix+'-next-name').textContent=next[3];document.getElementById(prefix+'-next-time').textContent=next[1]+' – '+next[2];const diff=next[0]===mmdd?toMins(next[1])-nowMins:(24*60-nowMins)+toMins(next[1]);document.getElementById(prefix+'-next-left').textContent=fmtDur(Math.max(0,diff));}
+  else{document.getElementById(prefix+'-next-name').textContent='計劃結束';document.getElementById(prefix+'-next-time').textContent='—';document.getElementById(prefix+'-next-left').textContent='—';}
+}
+
+// ── now line ──
+function drawNowLine(dates){
+  document.querySelectorAll('.now-line,.now-label').forEach(e=>e.remove());
+  const now=new Date(),mmdd=getMMDD(now);
+  if(!dates.includes(mmdd))return;
+  const nowMins=now.getHours()*60+now.getMinutes();
+  const tl=document.getElementById('tl-'+mmdd);
+  if(!tl)return;
+  const slots=[...tl.querySelectorAll('[data-start][data-end]')]
+    .filter(s=>s.dataset.start!==s.dataset.end)
+    .map(s=>({el:s,start:toMins(s.dataset.start),end:toMins(s.dataset.end)}))
+    .sort((a,b)=>a.start-b.start);
+  if(!slots.length)return;
+  let dS=99999,dE=0;
+  slots.forEach(s=>{if(s.start<dS)dS=s.start;if(s.end>dE)dE=s.end;});
+  if(nowMins<dS||nowMins>dE)return;
+  let topPx=null;
+  const cur=slots.find(s=>nowMins>=s.start&&nowMins<=s.end);
+  if(cur){const r=(nowMins-cur.start)/Math.max(1,cur.end-cur.start);topPx=cur.el.offsetTop+r*cur.el.offsetHeight;}
+  else{for(let i=0;i<slots.length-1;i++){const p=slots[i],n=slots[i+1];if(nowMins>p.end&&nowMins<n.start){const r=(nowMins-p.end)/(n.start-p.end);topPx=(p.el.offsetTop+p.el.offsetHeight)+r*(n.el.offsetTop-(p.el.offsetTop+p.el.offsetHeight));break;}}}
+  if(topPx===null)return;
+  topPx=Math.max(0,Math.min(topPx,tl.scrollHeight));
+  const line=document.createElement('div');line.className='now-line';line.style.top=topPx+'px';
+  const lbl=document.createElement('div');lbl.className='now-label';lbl.style.top=topPx+'px';lbl.textContent=fmtTime(now);
+  tl.appendChild(line);tl.appendChild(lbl);
+}
+
+function update(){
+  updateStatus(prepSchedule,prepDates,'prep','clock-prep');
+  updateStatus(examSchedule,examDates,'exam','clock-exam');
+  const active=document.querySelector('.page.active').id;
+  if(active==='page-prep')drawNowLine(prepDates);
+  else if(active==='page-exam')drawNowLine(examDates);
   else document.querySelectorAll('.now-line,.now-label').forEach(e=>e.remove());
 }
 
-function switchTab(tab) {
+function switchTab(tab){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('nav a[id^=tab]').forEach(a=>a.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
-  if(tab==='progress') {
-    document.querySelectorAll('.now-line,.now-label').forEach(e=>e.remove());
-    renderProgressPage();
-  }
-  else drawNowLine(tab==='prep'?prepSchedule:examSchedule, tab==='prep'?prepDates:examDates);
+  if(tab==='progress'){document.querySelectorAll('.now-line,.now-label').forEach(e=>e.remove());renderProgress();}
+  else{const d=tab==='prep'?prepDates:examDates;drawNowLine(d);}
 }
 
-// Auto-switch to exam week if today is 4/13–4/17
-const todayMMDD = getMMDD(new Date());
-if(examDates.includes(todayMMDD)) switchTab('exam');
-
-renderProgressPage();
+// ── init ──
+initChecked();
+renderProgress();
+const todayMMDD=getMMDD(new Date());
+if(examDates.includes(todayMMDD))switchTab('exam');
 update();
-setInterval(update, 30000);
-window.addEventListener('resize', update);
+setInterval(update,30000);
+window.addEventListener('resize',update);
 </script>
 </body>
 </html>
