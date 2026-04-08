@@ -1139,7 +1139,7 @@ function clampInterval(day, start, duration) {
 }
 
 function getBlockingItems(day, activeItem) {
-  return day.items.filter(item => item !== activeItem && item.type !== 'marker');
+  return day.items.filter(item => item !== activeItem && !item.hidden && item.type !== 'marker');
 }
 
 function getPointerMinutes(day, clientY) {
@@ -1426,7 +1426,7 @@ function bindTimelineInsertion() {
 function collectTasks() {
   return dayModels.flatMap(day =>
     day.items
-      .filter(item => item.sid && item.subjectKey && item.type !== 'rest' && item.type !== 'exam')
+      .filter(item => !item.hidden && item.sid && item.subjectKey && item.type !== 'rest' && item.type !== 'exam')
       .map(item => ({
         sid: item.sid,
         key: item.subjectKey,
@@ -1578,7 +1578,7 @@ function buildSchedule(dates) {
     .filter(day => dates.includes(day.dayId))
     .flatMap(day =>
       day.items
-        .filter(item => item.type === 'task' && !isItemDone(item))
+        .filter(item => !item.hidden && item.type === 'task' && !isItemDone(item))
         .map(item => [
           day.dayId,
           minsToHHMM(item.start),
@@ -1657,7 +1657,7 @@ function drawNowLine(dates) {
   const nowMins = now.getHours() * 60 + now.getMinutes();
   const timelineEl = day.timelineEl;
   const slots = day.items
-    .filter(item => item.renderEl && item.end > item.start && item.type !== 'marker')
+    .filter(item => !item.hidden && item.renderEl && item.end > item.start && item.type !== 'marker')
     .map(item => ({ el: item.renderEl, start: item.start, end: item.end }))
     .sort((a, b) => a.start - b.start);
 
