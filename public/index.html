@@ -787,24 +787,29 @@ function renderItem(day, item) {
   const renderStart = day.renderStart ?? day.baseStart;
   const top = TIMELINE_PADDING + (item.start - renderStart) * PX_PER_MIN;
   const duration = Math.max(item.end - item.start, item.type === 'marker' ? 0 : MIN_DURATION);
-  const height = item.type === 'marker'
+  const minHeight = item.type === 'marker'
     ? MARKER_HEIGHT
-    : Math.max(SLOT_MIN_HEIGHT, duration * PX_PER_MIN);
+    : item.type === 'rest'
+      ? REST_MIN_HEIGHT
+      : SLOT_MIN_HEIGHT;
+  const height = Math.max(minHeight, duration * PX_PER_MIN);
 
   el.style.top = `${top}px`;
   el.style.height = `${height}px`;
 
   if (item.type === 'rest') {
-    el.textContent = item.text;
+    el.innerHTML = `<div class="rest-text">${escapeHtml(item.text)}</div>`;
   } else {
     const timeText = getItemTimeText(item);
     const durationText = getDurationText(item);
+    const metaLine = [timeText, item.label].filter(Boolean).join(' · ');
     el.innerHTML = `
       <div class="slot-content">
-        ${timeText ? `<div class="s-time">${escapeHtml(timeText)}</div>` : ''}
-        ${item.label ? `<div class="s-label">${escapeHtml(item.label)}</div>` : ''}
-        <div class="s-name">${escapeHtml(item.name)}</div>
-        ${durationText && !item.fixedDone ? `<div class="s-dur">${escapeHtml(durationText)}</div>` : ''}
+        ${metaLine ? `<div class="s-meta-line">${escapeHtml(metaLine)}</div>` : ''}
+        <div class="s-main-line">
+          <span class="s-main-text">${escapeHtml(item.name)}</span>
+          ${durationText && !item.fixedDone ? `<span class="s-inline-dur">${escapeHtml(durationText)}</span>` : ''}
+        </div>
       </div>
     `;
 
