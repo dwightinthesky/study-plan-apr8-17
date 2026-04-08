@@ -81,6 +81,10 @@ nav .nav-title {
   border-bottom: 2px solid transparent;
 }
 
+nav .nav-title-small {
+  font-size: 0.9em;
+}
+
 /* ── PAGES ── */
 .page { display: none; }
 .page.active { display: block; }
@@ -220,7 +224,7 @@ footer {
 <body>
 
 <nav>
-  <span class="nav-title">Howie's 讀書計劃</span>
+  <span class="nav-title">Howie's <span class="nav-title-small">讀書計劃</span></span>
   <a class="active" id="tab-prep" onclick="switchTab('prep')">準備週</a>
   <a id="tab-exam" onclick="switchTab('exam')">考試週</a>
 </nav>
