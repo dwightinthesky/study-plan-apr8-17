@@ -812,6 +812,8 @@ function buildCustomItem(record) {
     type: record.type,
     subjectKey: record.subjectKey ?? detectSubjectKey(classes, label, name),
     renderEl: null,
+    hidden: Boolean(record.hidden),
+    customColor: record.customColor || null,
     custom: true,
     customKind: record.customKind || null
   };
@@ -835,6 +837,8 @@ function serialiseCustomItem(item) {
     end: item.end,
     originalStart: item.originalStart,
     originalEnd: item.originalEnd,
+    hidden: Boolean(item.hidden),
+    customColor: item.customColor || null,
     customKind: item.customKind || null
   };
 }
@@ -862,7 +866,11 @@ function parseItem(slotEl, dayId, order) {
   const markerDone = fixedDone && start === end;
   const editable = Boolean(sid) && !fixedDone && !slotEl.classList.contains('exam-slot');
   const persisted = sid && layoutAdjustments[sid] ? layoutAdjustments[sid] : null;
+  const meta = sid ? itemMeta[sid] : null;
   const restLabel = isRest ? parseRestLabel(slotEl.textContent) : '';
+  const resolvedLabel = meta?.label ?? label;
+  const resolvedName = meta?.name ?? name;
+  const resolvedText = meta?.text ?? restLabel;
 
   return {
     dayId,
@@ -870,9 +878,9 @@ function parseItem(slotEl, dayId, order) {
     order,
     sid,
     classes,
-    label,
-    name,
-    text: restLabel,
+    label: resolvedLabel,
+    name: resolvedName,
+    text: resolvedText,
     durationText,
     durationSuffix: splitDurationText(durationText).suffix,
     hasDuration: Boolean(durationText),
@@ -884,6 +892,7 @@ function parseItem(slotEl, dayId, order) {
     fixedDone,
     editable,
     isDragging: false,
+    hidden: Boolean(meta?.hidden),
     type: isRest
       ? 'rest'
       : slotEl.classList.contains('exam-slot')
@@ -892,7 +901,8 @@ function parseItem(slotEl, dayId, order) {
           ? 'marker'
           : 'task',
     subjectKey: detectSubjectKey(classes, label, name),
-    renderEl: null
+    renderEl: null,
+    customColor: meta?.color || null
   };
 }
 
