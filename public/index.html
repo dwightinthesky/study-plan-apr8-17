@@ -93,14 +93,20 @@ nav .nav-title-small{font-size:.9em;margin-left:.28em;}
 
 .edit-tools{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:0 2rem .2rem;color:var(--muted);font-size:10px;letter-spacing:.04em;}
 .edit-tools span{max-width:48rem;}
+.edit-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:.6rem;flex-wrap:wrap;}
+.add-buttons{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;}
 .edit-tools button{border:1px solid var(--border2);background:var(--surface);color:var(--text);padding:.4rem .75rem;border-radius:999px;font:inherit;cursor:pointer;transition:background .15s,border-color .15s;}
 .edit-tools button:hover{background:var(--bg);border-color:var(--accent);}
+.add-mode-btn{border-style:dashed;}
+.add-mode-btn.is-active{background:var(--accent);border-color:var(--accent);color:#fff;}
 
 .timeline.enhanced{flex:none;padding:8px 0 10px;overflow:hidden;}
 .timeline.enhanced .slot{position:absolute;left:5%;right:5%;margin:0;box-shadow:0 0 0 2px var(--bg);}
 .timeline.enhanced .slot.rest{z-index:1;opacity:1;box-shadow:0 0 0 2px var(--bg), inset 0 0 0 1px var(--border);}
 .timeline.enhanced .slot.exam-slot{z-index:2;}
 .timeline.enhanced .slot.marker-slot{z-index:5;}
+.timeline.add-mode{cursor:copy;}
+.timeline.add-mode .slot{cursor:copy !important;}
 .timeline.enhanced .slot[data-editable="true"]{z-index:4;cursor:grab;user-select:none;touch-action:none;}
 .timeline.enhanced .slot[data-editable="true"].dragging{cursor:grabbing;opacity:.95;}
 .timeline.enhanced .slot[data-editable="true"] .slot-content{min-height:100%;}
@@ -199,6 +205,7 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
   .page-header,.priority-row,.status-card,.days-grid,.clock-row,.prog-wrap,.edit-tools{margin-left:0;margin-right:0;padding-left:1rem;padding-right:1rem;}
   .prog-wrap{padding-left:.5rem;padding-right:.5rem;}
   .edit-tools{align-items:flex-start;flex-direction:column;padding-bottom:.35rem;}
+  .edit-toolbar{justify-content:flex-start;}
 }
 </style>
 </head>
@@ -224,8 +231,16 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
   </div>
   <div class="clock-row" id="clock-prep">--:--</div>
   <div class="edit-tools">
-    <span>拖曳色塊可移動時間，也可以橫向拖到別天；拖曳上下邊緣可調整時長。變更會儲存在這台裝置的瀏覽器。</span>
-    <button class="reset-layout-btn" type="button">重設時間</button>
+    <span>拖曳色塊可移動時間，也可以橫向拖到別天；拖曳上下邊緣可調整時長。按新增按鈕後，在想加入的當天滑鼠位置點一下就會新增。</span>
+    <div class="edit-toolbar">
+      <div class="add-buttons">
+        <button class="add-mode-btn" type="button" data-add-kind="review">＋ 複習 Session</button>
+        <button class="add-mode-btn" type="button" data-add-kind="rest">＋ 休息</button>
+        <button class="add-mode-btn" type="button" data-add-kind="lunch">＋ 午休</button>
+        <button class="add-mode-btn" type="button" data-add-kind="dinner">＋ 晚餐</button>
+      </div>
+      <button class="reset-layout-btn" type="button">重設時間</button>
+    </div>
   </div>
   <div class="status-card">
     <div class="status-block">
@@ -360,8 +375,16 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
   <div class="priority-row"><span>邏輯：考前讀那科 → 考試 → 空檔讀下一科</span></div>
   <div class="clock-row" id="clock-exam">--:--</div>
   <div class="edit-tools">
-    <span>拖曳色塊可移動時間，也可以橫向拖到別天；拖曳上下邊緣可調整時長。變更會儲存在這台裝置的瀏覽器。</span>
-    <button class="reset-layout-btn" type="button">重設時間</button>
+    <span>拖曳色塊可移動時間，也可以橫向拖到別天；拖曳上下邊緣可調整時長。按新增按鈕後，在想加入的當天滑鼠位置點一下就會新增。</span>
+    <div class="edit-toolbar">
+      <div class="add-buttons">
+        <button class="add-mode-btn" type="button" data-add-kind="review">＋ 複習 Session</button>
+        <button class="add-mode-btn" type="button" data-add-kind="rest">＋ 休息</button>
+        <button class="add-mode-btn" type="button" data-add-kind="lunch">＋ 午休</button>
+        <button class="add-mode-btn" type="button" data-add-kind="dinner">＋ 晚餐</button>
+      </div>
+      <button class="reset-layout-btn" type="button">重設時間</button>
+    </div>
   </div>
   <div class="status-card">
     <div class="status-block">
