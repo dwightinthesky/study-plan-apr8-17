@@ -1,0 +1,13 @@
+{
+  "name": "study-plan-apr8-17",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler pages deploy public --project-name study-plan-apr8-17",
+    "autopublish": "node scripts/auto-publish.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.81.0"
+  }
+}
