@@ -4,6 +4,7 @@ import path from "node:path";
 
 const projectName = process.env.CF_PAGES_PROJECT || "study-plan-apr8-17";
 const rootDir = process.cwd();
+const wranglerBin = path.join(rootDir, "node_modules", ".bin", "wrangler");
 const ignoredSegments = new Set([".git", ".wrangler", "node_modules"]);
 const ignoredSuffixes = [".log", ".tmp", ".swp"];
 
@@ -119,7 +120,7 @@ async function publish(triggerLabel) {
     const message = `auto: update ${timestamp()}`;
     await run("git", ["commit", "-m", message]);
     await run("git", ["push", "origin", "main"]);
-    await run("npm", ["run", "deploy"]);
+    await run(wranglerBin, ["pages", "deploy", "public", "--project-name", projectName]);
     console.log(`[auto-publish] Finished for ${triggerLabel}. Cloudflare project: ${projectName}`);
   } catch (error) {
     console.error("[auto-publish] Failed:", error.message);
