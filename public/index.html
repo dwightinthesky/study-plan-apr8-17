@@ -934,7 +934,7 @@ function renderProgressPage() {
   const totalCount = items.length;
   const doneCount = items.filter(item => item.done).length;
   const pendingCount = totalCount - doneCount;
-  const activeSubjects = Object.keys(subjectMeta).filter(key => items.some(item => item.subjectKey === key));
+  const pendingSubjects = Object.keys(subjectMeta).filter(key => items.some(item => item.subjectKey === key && !item.done));
 
   document.getElementById('progress-summary').innerHTML = `
     <div class="progress-summary-card">
@@ -950,7 +950,7 @@ function renderProgressPage() {
     <div class="progress-summary-card">
       <label>未完成</label>
       <div class="val">${pendingCount}</div>
-      <div class="sub">${activeSubjects.length} 科仍在推進</div>
+      <div class="sub">${pendingSubjects.length} 科仍有待完成項目</div>
     </div>
   `;
 
@@ -988,6 +988,7 @@ function update() {
   const activeTab = document.querySelector('.page.active').id;
   if(activeTab==='page-prep') drawNowLine(prepSchedule, prepDates);
   else if(activeTab==='page-exam') drawNowLine(examSchedule, examDates);
+  else document.querySelectorAll('.now-line,.now-label').forEach(e=>e.remove());
 }
 
 function switchTab(tab) {
@@ -995,7 +996,10 @@ function switchTab(tab) {
   document.querySelectorAll('nav a[id^=tab]').forEach(a=>a.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
-  if(tab==='progress') renderProgressPage();
+  if(tab==='progress') {
+    document.querySelectorAll('.now-line,.now-label').forEach(e=>e.remove());
+    renderProgressPage();
+  }
   else drawNowLine(tab==='prep'?prepSchedule:examSchedule, tab==='prep'?prepDates:examDates);
 }
 
