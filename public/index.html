@@ -473,7 +473,7 @@ const SNAP_MINUTES = 15;
 const MIN_DURATION = 15;
 const PX_PER_MIN = 1.035;
 const SLOT_MIN_HEIGHT = 42;
-const REST_MIN_HEIGHT = 30;
+const REST_MIN_HEIGHT = 48;
 const MARKER_HEIGHT = 46;
 const TIMELINE_PADDING = 9;
 const prepDates = ['0408', '0409', '0410', '0411', '0412'];
@@ -552,6 +552,14 @@ function splitDurationText(text) {
   if (!source) return { suffix: '' };
   const match = source.match(/^(?:\d+(?:\.\d+)?h(?:\d+|\s*\d+min)?|\d+min)\s*(.*)$/i);
   return { suffix: match ? match[1].trim() : '' };
+}
+
+function parseRestLabel(text) {
+  const source = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!source) return '休息';
+  const withoutTime = source.replace(/^\d{1,2}:\d{2}\s*[–-]\s*\d{1,2}:\d{2}\s*/, '').trim();
+  const withoutDuration = withoutTime.replace(/\s*(?:\d+(?:\.\d+)?h(?:\s*\d+min)?|\d+min)\s*$/i, '').trim();
+  return withoutDuration || withoutTime || source;
 }
 
 function detectSubjectKey(classes, label, name) {
