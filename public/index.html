@@ -202,6 +202,120 @@ nav .nav-title-small {
   background: var(--bg); padding: 0 3px; z-index: 11; pointer-events: none;
 }
 
+.progress-shell {
+  margin: 1.25rem 2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.progress-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-summary-card {
+  background: var(--surface);
+  padding: 1rem 1.1rem;
+}
+
+.progress-summary-card label {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.progress-summary-card .val {
+  font-family: 'Fraunces', serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1;
+}
+
+.progress-summary-card .sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.progress-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.subject-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.subject-head {
+  padding: 0.95rem 1rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.subject-head .title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.2rem;
+  color: var(--text);
+}
+
+.subject-head .meta,
+.subject-head .count-label {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.subject-head .count {
+  text-align: right;
+}
+
+.subject-head .count strong {
+  display: block;
+  font-family: 'Fraunces', serif;
+  font-size: 1.1rem;
+  color: var(--text);
+  line-height: 1;
+}
+
+.task-list {
+  padding: 0.95rem;
+  display: grid;
+  gap: 0.6rem;
+  background: var(--bg);
+}
+
+.task-list .slot {
+  margin: 0;
+}
+
+.task-empty {
+  border: 1px dashed var(--border2);
+  border-radius: 4px;
+  padding: 0.9rem;
+  background: var(--surface);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 footer {
   padding: 1.25rem 2rem;
   border-top: 1px solid var(--border);
@@ -212,13 +326,15 @@ footer {
 @media (max-width: 960px) {
   .days-grid.cols-5 { grid-template-columns: repeat(3,1fr); }
   .days-grid.cols-3 { grid-template-columns: repeat(2,1fr); }
+  .progress-summary,
+  .progress-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
   .days-grid.cols-5, .days-grid.cols-3 { grid-template-columns: 1fr 1fr; }
   .status-card { grid-template-columns: 1fr; }
   .status-divider { display: none; }
   nav { padding: 0 1rem; }
-  .page-header, .priority-row, .status-card, .days-grid, .clock-row { margin-left: 1rem; margin-right: 1rem; }
+  .page-header, .priority-row, .status-card, .days-grid, .clock-row, .progress-shell { margin-left: 1rem; margin-right: 1rem; }
 }
 </style>
 </head>
@@ -228,6 +344,7 @@ footer {
   <span class="nav-title">Howie's<span class="nav-title-small">讀書計劃</span></span>
   <a class="active" id="tab-prep" onclick="switchTab('prep')">準備週</a>
   <a id="tab-exam" onclick="switchTab('exam')">考試週</a>
+  <a id="tab-progress" onclick="switchTab('progress')">各科進度</a>
 </nav>
 
 <!-- ══════════════ 準備週 4/8–4/12 ══════════════ -->
@@ -532,6 +649,20 @@ footer {
   <footer>考試週每天 5h · 衝刺複習安排考前 · 考後推進 Sust & CS</footer>
 </div><!-- /page-exam -->
 
+<div class="page" id="page-progress">
+
+  <div class="page-header">
+    <span class="subtitle">All Subjects · 各科進度</span>
+  </div>
+
+  <div class="progress-shell">
+    <div class="progress-summary" id="progress-summary"></div>
+    <div class="progress-grid" id="progress-grid"></div>
+  </div>
+
+  <footer>進度頁會直接讀取目前時間表卡片，自動整理每一科的待讀項目與已完成項目。</footer>
+</div><!-- /page-progress -->
+
 <script>
 const prepSchedule = [
   ["0408","13:00","14:00","EU W1 ① 初次複習"],
@@ -702,13 +833,161 @@ function drawNowLine(schedule, dates) {
 
 const prepDates=['0408','0409','0410','0411','0412'];
 const examDates=['0413','0414','0415','0416','0417'];
+const subjectMeta = {
+  law:   { title: 'EU Law', slotClass: 'law1' },
+  acct:  { title: 'Acct',   slotClass: 'acct' },
+  stat:  { title: 'Stats',  slotClass: 'stat' },
+  psych: { title: 'Psych',  slotClass: 'psych' },
+  sust:  { title: 'Sust',   slotClass: 'sust' },
+  cs:    { title: 'CS',     slotClass: 'cs' },
+};
+
+function escapeHtml(text) {
+  return String(text ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function detectSubjectKey(slot, label, name) {
+  if ([...slot.classList].some(cls => cls.startsWith('law'))) return 'law';
+  if (slot.classList.contains('acct')) return 'acct';
+  if (slot.classList.contains('stat')) return 'stat';
+  if (slot.classList.contains('psych')) return 'psych';
+  if (slot.classList.contains('sust')) return 'sust';
+  if (slot.classList.contains('cs')) return 'cs';
+
+  const text = `${label} ${name}`.trim();
+  if (text.startsWith('EU') || text.includes('EU Law')) return 'law';
+  if (text.startsWith('Acct')) return 'acct';
+  if (text.startsWith('Stats')) return 'stat';
+  if (text.startsWith('Psych')) return 'psych';
+  if (text.startsWith('Sust')) return 'sust';
+  if (text.startsWith('CS') || text.startsWith('Excel') || text.startsWith('Word') || text.startsWith('PowerPoint')) return 'cs';
+
+  return null;
+}
+
+function getProgressSlotClass(slot, subjectKey) {
+  const classes = ['law1', 'law2', 'law3', 'law4', 'acct', 'stat', 'psych', 'sust', 'cs', 'sprint', 'done'];
+  const match = classes.find(cls => slot.classList.contains(cls));
+  return match || subjectMeta[subjectKey]?.slotClass || 'law1';
+}
+
+function collectProgressItems() {
+  return [...document.querySelectorAll('.timeline .slot')]
+    .filter(slot => !slot.classList.contains('rest') && !slot.classList.contains('exam-slot'))
+    .map(slot => {
+      const label = slot.querySelector('.s-label')?.textContent.trim() || '';
+      const name = slot.querySelector('.s-name')?.textContent.trim() || '';
+      const time = slot.querySelector('.s-time')?.textContent.trim() || '';
+      const duration = slot.querySelector('.s-dur')?.textContent.trim() || '';
+      const subjectKey = detectSubjectKey(slot, label, name);
+      if (!subjectKey) return null;
+
+      const timeline = slot.closest('.timeline');
+      const dayName = slot.closest('.day-col')?.querySelector('.dname')?.textContent.replace(' 今天', '').trim() || '';
+
+      return {
+        subjectKey,
+        slotClass: getProgressSlotClass(slot, subjectKey),
+        done: slot.classList.contains('done'),
+        label,
+        name,
+        time,
+        duration,
+        dayName,
+        mmdd: timeline?.id?.replace('tl-', '') || '',
+        start: slot.dataset.start || '00:00',
+      };
+    })
+    .filter(Boolean);
+}
+
+function compareProgressItems(a, b) {
+  if (a.done !== b.done) return Number(a.done) - Number(b.done);
+  if (a.mmdd !== b.mmdd) return a.mmdd.localeCompare(b.mmdd);
+  return toMins(a.start) - toMins(b.start);
+}
+
+function renderProgressItem(item) {
+  const metaLine = [item.dayName, item.time].filter(Boolean).join(' · ');
+  const labelHtml = item.label ? `<div class="s-label">${escapeHtml(item.label)}</div>` : '';
+  const durationHtml = item.duration && !item.done
+    ? `<div class="s-dur">${escapeHtml(item.duration)}</div>`
+    : '';
+
+  return `
+    <div class="slot ${escapeHtml(item.slotClass)}${item.done ? ' done' : ''}">
+      ${metaLine ? `<div class="s-time">${escapeHtml(metaLine)}</div>` : ''}
+      ${labelHtml}
+      <div class="s-name">${escapeHtml(item.name)}</div>
+      ${durationHtml}
+    </div>
+  `;
+}
+
+function renderProgressPage() {
+  const items = collectProgressItems();
+  const totalCount = items.length;
+  const doneCount = items.filter(item => item.done).length;
+  const pendingCount = totalCount - doneCount;
+  const activeSubjects = Object.keys(subjectMeta).filter(key => items.some(item => item.subjectKey === key));
+
+  document.getElementById('progress-summary').innerHTML = `
+    <div class="progress-summary-card">
+      <label>總任務</label>
+      <div class="val">${totalCount}</div>
+      <div class="sub">時間表同步項目</div>
+    </div>
+    <div class="progress-summary-card">
+      <label>已完成</label>
+      <div class="val">${doneCount}</div>
+      <div class="sub">已標示完成的項目</div>
+    </div>
+    <div class="progress-summary-card">
+      <label>未完成</label>
+      <div class="val">${pendingCount}</div>
+      <div class="sub">${activeSubjects.length} 科仍在推進</div>
+    </div>
+  `;
+
+  document.getElementById('progress-grid').innerHTML = Object.entries(subjectMeta).map(([key, meta]) => {
+    const subjectItems = items
+      .filter(item => item.subjectKey === key)
+      .sort(compareProgressItems);
+    const subjectDoneCount = subjectItems.filter(item => item.done).length;
+
+    return `
+      <section class="subject-card">
+        <div class="subject-head">
+          <div>
+            <div class="title">${meta.title}</div>
+            <div class="meta">${subjectItems.length} 項讀書任務</div>
+          </div>
+          <div class="count">
+            <strong>${subjectDoneCount} / ${subjectItems.length}</strong>
+            <div class="count-label">完成</div>
+          </div>
+        </div>
+        <div class="task-list">
+          ${subjectItems.length
+            ? subjectItems.map(renderProgressItem).join('')
+            : '<div class="task-empty">目前沒有排入任務</div>'}
+        </div>
+      </section>
+    `;
+  }).join('');
+}
 
 function update() {
   updateStatus(prepSchedule, prepDates, 'prep', 'clock-prep');
   updateStatus(examSchedule, examDates, 'exam', 'clock-exam');
   const activeTab = document.querySelector('.page.active').id;
   if(activeTab==='page-prep') drawNowLine(prepSchedule, prepDates);
-  else drawNowLine(examSchedule, examDates);
+  else if(activeTab==='page-exam') drawNowLine(examSchedule, examDates);
 }
 
 function switchTab(tab) {
@@ -716,13 +995,15 @@ function switchTab(tab) {
   document.querySelectorAll('nav a[id^=tab]').forEach(a=>a.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');
   document.getElementById('tab-'+tab).classList.add('active');
-  drawNowLine(tab==='prep'?prepSchedule:examSchedule, tab==='prep'?prepDates:examDates);
+  if(tab==='progress') renderProgressPage();
+  else drawNowLine(tab==='prep'?prepSchedule:examSchedule, tab==='prep'?prepDates:examDates);
 }
 
 // Auto-switch to exam week if today is 4/13–4/17
 const todayMMDD = getMMDD(new Date());
 if(examDates.includes(todayMMDD)) switchTab('exam');
 
+renderProgressPage();
 update();
 setInterval(update, 30000);
 window.addEventListener('resize', update);
