@@ -1610,8 +1610,11 @@ function switchTab(tab) {
 
 parseInitialDom();
 bindResetButtons();
+bindAddButtons();
+bindTimelineInsertion();
 renderAllTimelines();
 renderProgress();
+syncAddModeUi();
 
 const todayMMDD = getMMDD(new Date());
 if (examDates.includes(todayMMDD)) switchTab('exam');
