@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "deploy": "wrangler pages deploy public --project-name study-plan-apr8-17",
+    "deploy": "wrangler pages deploy public --project-name study-plan-apr8-17 --commit-dirty=true",
     "autopublish": "node scripts/auto-publish.mjs"
   },
   "devDependencies": {

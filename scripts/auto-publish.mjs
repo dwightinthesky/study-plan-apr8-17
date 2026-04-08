@@ -120,7 +120,14 @@ async function publish(triggerLabel) {
     const message = `auto: update ${timestamp()}`;
     await run("git", ["commit", "-m", message]);
     await run("git", ["push", "origin", "main"]);
-    await run(wranglerBin, ["pages", "deploy", "public", "--project-name", projectName]);
+    await run(wranglerBin, [
+      "pages",
+      "deploy",
+      "public",
+      "--project-name",
+      projectName,
+      "--commit-dirty=true"
+    ]);
     console.log(`[auto-publish] Finished for ${triggerLabel}. Cloudflare project: ${projectName}`);
   } catch (error) {
     console.error("[auto-publish] Failed:", error.message);
