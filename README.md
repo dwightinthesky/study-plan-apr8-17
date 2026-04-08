@@ -12,3 +12,7 @@ Static study plan site deployed to Cloudflare Pages.
 - `npm install`
 - `npm run deploy`
 - `npm run autopublish`
+
+## Auto publish
+
+This project also runs a local launchd agent on macOS that watches the repo and automatically commits, pushes, and deploys changes to Cloudflare Pages.
