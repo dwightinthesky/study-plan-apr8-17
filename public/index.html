@@ -632,16 +632,18 @@ function isTaskOverdue(task, now = new Date()) {
 function parseItem(slotEl, dayId, order) {
   const start = slotEl.dataset.start ? toMins(slotEl.dataset.start) : 0;
   const end = slotEl.dataset.end ? toMins(slotEl.dataset.end) : start;
+  const isRest = slotEl.classList.contains('rest');
   const classes = [...slotEl.classList].filter(cls => cls !== 'slot');
   const label = slotEl.querySelector('.s-label')?.textContent.trim() || '';
   const name = slotEl.querySelector('.s-name')?.textContent.trim() || '';
   const durationText = slotEl.querySelector('.s-dur')?.textContent.trim() || '';
   const timeText = slotEl.querySelector('.s-time')?.textContent.trim() || '';
-  const sid = slotEl.dataset.sid || null;
+  const sid = slotEl.dataset.sid || (isRest ? `rest-${dayId}-${order}` : null);
   const fixedDone = slotEl.classList.contains('done') && ((slotEl.querySelector('.s-name')?.textContent || '').includes('已完成'));
   const markerDone = fixedDone && start === end;
-  const editable = Boolean(sid) && !fixedDone;
+  const editable = Boolean(sid) && !fixedDone && !slotEl.classList.contains('exam-slot');
   const persisted = sid && layoutAdjustments[sid] ? layoutAdjustments[sid] : null;
+  const restLabel = isRest ? parseRestLabel(slotEl.textContent) : '';
 
   return {
     dayId,
@@ -651,7 +653,7 @@ function parseItem(slotEl, dayId, order) {
     classes,
     label,
     name,
-    text: slotEl.classList.contains('rest') ? slotEl.textContent.trim() : '',
+    text: restLabel,
     durationText,
     durationSuffix: splitDurationText(durationText).suffix,
     hasDuration: Boolean(durationText),
@@ -663,7 +665,7 @@ function parseItem(slotEl, dayId, order) {
     fixedDone,
     editable,
     isDragging: false,
-    type: slotEl.classList.contains('rest')
+    type: isRest
       ? 'rest'
       : slotEl.classList.contains('exam-slot')
         ? 'exam'
