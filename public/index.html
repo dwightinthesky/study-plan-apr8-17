@@ -1268,6 +1268,106 @@ function persistDoneState() {
   saveJson(STORAGE_KEYS.done, [...checkedSet]);
 }
 
+function getSlotMenuEl() {
+  return document.getElementById('slot-menu');
+}
+
+function hideSlotMenu() {
+  getSlotMenuEl().classList.remove('is-open');
+  slotMenuState = null;
+}
+
+function showSlotMenu(day, item, clientX, clientY) {
+  const menu = getSlotMenuEl();
+  slotMenuState = { day, item };
+  menu.classList.add('is-open');
+  menu.style.left = '0px';
+  menu.style.top = '0px';
+  const left = Math.min(clientX, window.innerWidth - menu.offsetWidth - 12);
+  const top = Math.min(clientY, window.innerHeight - menu.offsetHeight - 12);
+  menu.style.left = `${Math.max(8, left)}px`;
+  menu.style.top = `${Math.max(8, top)}px`;
+}
+
+function editSlotContent(item) {
+  if (!item) return;
+  if (item.type === 'rest') {
+    const nextText = window.prompt('內容', item.text || '休息');
+    if (nextText === null) return;
+    item.text = nextText.trim() || '休息';
+  } else {
+    const nextName = window.prompt('Session 內容', item.name || '複習 Session');
+    if (nextName === null) return;
+    const nextLabel = window.prompt('上方標籤（可留白）', item.label || '');
+    if (nextLabel === null) return;
+    item.name = nextName.trim() || item.name || '複習 Session';
+    item.label = nextLabel.trim();
+  }
+  saveItemState(item);
+  renderAllTimelines();
+  renderProgress();
+  update();
+}
+
+function pickSlotColor(item) {
+  if (!item) return;
+  colorTarget = item;
+  const colorInput = document.getElementById('slot-color-input');
+  colorInput.value = rgbToHex(item.customColor || getComputedStyle(item.renderEl).backgroundColor);
+  colorInput.click();
+}
+
+function handleSlotMenuAction(action) {
+  if (!slotMenuState) return;
+  const { day, item } = slotMenuState;
+  hideSlotMenu();
+  if (action === 'delete') {
+    if (window.confirm('要刪除這個 session 嗎？')) removeItem(day, item);
+    return;
+  }
+  if (action === 'edit') {
+    editSlotContent(item);
+    return;
+  }
+  if (action === 'color') {
+    pickSlotColor(item);
+  }
+}
+
+function bindSlotMenu() {
+  const menu = getSlotMenuEl();
+  menu.addEventListener('click', event => {
+    const button = event.target.closest('button[data-slot-action]');
+    if (!button) return;
+    handleSlotMenuAction(button.dataset.slotAction);
+  });
+
+  document.addEventListener('click', event => {
+    if (!menu.classList.contains('is-open')) return;
+    if (menu.contains(event.target)) return;
+    hideSlotMenu();
+  });
+
+  document.addEventListener('scroll', hideSlotMenu, true);
+  window.addEventListener('resize', hideSlotMenu);
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') hideSlotMenu();
+  });
+
+  const colorInput = document.getElementById('slot-color-input');
+  colorInput.addEventListener('input', () => {
+    if (!colorTarget) return;
+    colorTarget.customColor = colorInput.value;
+    saveItemState(colorTarget);
+    renderAllTimelines();
+    renderProgress();
+    update();
+  });
+  colorInput.addEventListener('change', () => {
+    colorTarget = null;
+  });
+}
+
 function renderActiveNowLine() {
   const activePageId = document.querySelector('.page.active')?.id;
   if (activePageId === 'page-prep') drawNowLine(prepDates);
@@ -1284,8 +1384,15 @@ function attachEditableEvents(el, day, item) {
     startEdit(event, day, item, mode);
   };
 
+  const handleContext = event => {
+    if (dragState) return;
+    event.preventDefault();
+    showSlotMenu(day, item, event.clientX, event.clientY);
+  };
+
   el.addEventListener('pointerdown', handleStart);
   el.addEventListener('mousedown', handleStart);
+  el.addEventListener('contextmenu', handleContext);
 }
 
 function startEdit(event, day, item, mode) {
