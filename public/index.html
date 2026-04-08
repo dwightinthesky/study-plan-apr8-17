@@ -656,16 +656,45 @@ function drawNowLine(schedule, dates) {
   const nowMins=now.getHours()*60+now.getMinutes();
   const tl=document.getElementById('tl-'+mmdd);
   if(!tl) return;
-  const slots=[...tl.querySelectorAll('[data-start][data-end]')].filter(s=>s.dataset.start!==s.dataset.end);
+  const slots=[...tl.querySelectorAll('[data-start][data-end]')]
+    .filter(s=>s.dataset.start!==s.dataset.end)
+    .map(s=>({
+      el:s,
+      start:toMins(s.dataset.start),
+      end:toMins(s.dataset.end)
+    }))
+    .sort((a,b)=>a.start-b.start);
   if(!slots.length) return;
   let dayStart=99999,dayEnd=0;
   slots.forEach(s=>{
-    const st=toMins(s.dataset.start),en=toMins(s.dataset.end);
-    if(st<dayStart) dayStart=st; if(en>dayEnd) dayEnd=en;
+    if(s.start<dayStart) dayStart=s.start;
+    if(s.end>dayEnd) dayEnd=s.end;
   });
   if(nowMins<dayStart||nowMins>dayEnd) return;
-  const ratio=(nowMins-dayStart)/(dayEnd-dayStart);
-  const topPx=ratio*tl.scrollHeight;
+
+  let topPx=null;
+  const currentSlot=slots.find(s=>nowMins>=s.start&&nowMins<=s.end);
+
+  if(currentSlot){
+    const slotDuration=Math.max(1,currentSlot.end-currentSlot.start);
+    const ratio=(nowMins-currentSlot.start)/slotDuration;
+    topPx=currentSlot.el.offsetTop+(ratio*currentSlot.el.offsetHeight);
+  } else {
+    for(let i=0;i<slots.length-1;i++){
+      const prev=slots[i];
+      const next=slots[i+1];
+      if(nowMins>prev.end&&nowMins<next.start){
+        const gapDuration=next.start-prev.end;
+        const ratio=(nowMins-prev.end)/gapDuration;
+        const prevBottom=prev.el.offsetTop+prev.el.offsetHeight;
+        topPx=prevBottom+(ratio*(next.el.offsetTop-prevBottom));
+        break;
+      }
+    }
+  }
+
+  if(topPx===null) return;
+  topPx=Math.max(0,Math.min(topPx,tl.scrollHeight));
   const line=document.createElement('div'); line.className='now-line'; line.style.top=topPx+'px';
   const label=document.createElement('div'); label.className='now-label'; label.style.top=topPx+'px'; label.textContent=fmtTime(now);
   tl.appendChild(line); tl.appendChild(label);
@@ -696,6 +725,7 @@ if(examDates.includes(todayMMDD)) switchTab('exam');
 
 update();
 setInterval(update, 30000);
+window.addEventListener('resize', update);
 </script>
 </body>
 </html>
