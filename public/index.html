@@ -494,11 +494,19 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
   <footer>勾選任務會同步到準備週／考試週的時間表</footer>
 </div>
 
+<div class="slot-menu" id="slot-menu">
+  <button type="button" data-slot-action="edit">編輯內容</button>
+  <button type="button" data-slot-action="color">選色</button>
+  <button type="button" class="danger" data-slot-action="delete">刪除</button>
+</div>
+<input class="slot-color-input" id="slot-color-input" type="color" value="#c0392b">
+
 <script>
 const STORAGE_KEYS = {
   layout: 'study-plan-layout-v2',
   done: 'study-plan-done-v2',
-  custom: 'study-plan-custom-items-v1'
+  custom: 'study-plan-custom-items-v1',
+  meta: 'study-plan-item-meta-v1'
 };
 const SNAP_MINUTES = 15;
 const MIN_DURATION = 15;
@@ -551,11 +559,14 @@ const ADD_ITEM_PRESETS = {
 
 const checkedSet = new Set(loadJson(STORAGE_KEYS.done, []));
 const layoutAdjustments = loadJson(STORAGE_KEYS.layout, {});
+const itemMeta = loadJson(STORAGE_KEYS.meta, {});
 const dayModels = [];
 let dragState = null;
 let overdueExpanded = false;
 let addMode = null;
 let customSequence = 0;
+let slotMenuState = null;
+let colorTarget = null;
 
 function loadJson(key, fallback) {
   try {
