@@ -985,6 +985,15 @@ function getDisplayClasses(item) {
   return classes.join(' ');
 }
 
+function applyCustomColor(el, item) {
+  if (!item.customColor) return;
+  el.style.backgroundColor = item.customColor;
+  el.style.color = getReadableTextColor(item.customColor);
+  if (item.type === 'rest') {
+    el.style.borderColor = getReadableTextColor(item.customColor);
+  }
+}
+
 function getItemTimeText(item) {
   if (item.type === 'rest') return `${minsToHHMM(item.start)}–${minsToHHMM(item.end)}`;
   if (item.type === 'marker' && item.timeMode === 'none') return '';
@@ -1002,7 +1011,7 @@ function getDurationText(item) {
 
 function updateDayHours(day) {
   if (!day.hoursEl) return;
-  const timed = day.items.filter(item => item.end > item.start);
+  const timed = day.items.filter(item => !item.hidden && item.end > item.start);
   if (!timed.length) return;
   const start = Math.min(...timed.map(item => item.start));
   const end = Math.max(...timed.map(item => item.end));
@@ -1077,6 +1086,8 @@ function renderItem(day, item) {
 
   }
 
+  applyCustomColor(el, item);
+
   if (item.editable) {
     const topHandle = document.createElement('div');
     topHandle.className = 'resize-handle top';
@@ -1104,6 +1115,7 @@ function renderDay(day) {
 
   [...day.items]
     .sort((a, b) => a.start - b.start || a.order - b.order)
+    .filter(item => !item.hidden)
     .forEach(item => timelineEl.appendChild(renderItem(day, item)));
 
   updateDayHours(day);
