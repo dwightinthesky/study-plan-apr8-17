@@ -818,6 +818,15 @@ function restorePersistedDayAssignments() {
   pendingMoves.forEach(({ item, fromDay, toDay }) => moveItemToDay(item, fromDay, toDay));
 }
 
+function restoreCustomItems() {
+  const customRecords = loadJson(STORAGE_KEYS.custom, []);
+  customRecords.forEach(record => {
+    const day = findDay(record.dayId);
+    if (!day) return;
+    day.items.push(buildCustomItem(record));
+  });
+}
+
 function parseInitialDom() {
   document.querySelectorAll('.timeline').forEach(timelineEl => {
     const dayEl = timelineEl.closest('.day-col');
@@ -846,6 +855,7 @@ function parseInitialDom() {
   });
 
   restorePersistedDayAssignments();
+  restoreCustomItems();
 
   const groups = new Map();
   dayModels.forEach(day => {
@@ -1014,6 +1024,56 @@ function clampInterval(day, start, duration) {
 
 function getBlockingItems(day, activeItem) {
   return day.items.filter(item => item !== activeItem && item.type !== 'marker');
+}
+
+function getPointerMinutes(day, clientY) {
+  const rect = day.timelineEl.getBoundingClientRect();
+  const renderStart = day.renderStart ?? day.baseStart;
+  const rawMinutes = renderStart + ((clientY - rect.top - TIMELINE_PADDING) / PX_PER_MIN);
+  return roundToSnap(rawMinutes);
+}
+
+function createPresetItem(day, kind, clientY) {
+  const preset = ADD_ITEM_PRESETS[kind];
+  if (!preset) return null;
+  const duration = preset.duration;
+  const desiredStart = getPointerMinutes(day, clientY);
+  const probe = {
+    start: desiredStart,
+    end: desiredStart + duration,
+    type: preset.type
+  };
+  const next = resolveMove(day, probe, desiredStart, 1);
+  return buildCustomItem({
+    sid: nextCustomSid(kind),
+    dayId: day.dayId,
+    originalDayId: day.dayId,
+    order: Date.now() + customSequence,
+    type: preset.type,
+    classes: preset.classes,
+    label: preset.label || '',
+    name: preset.name || '',
+    text: preset.text || '',
+    durationSuffix: preset.durationSuffix || '',
+    hasDuration: preset.hasDuration !== false,
+    subjectKey: preset.subjectKey ?? null,
+    start: next.start,
+    end: next.end,
+    originalStart: next.start,
+    originalEnd: next.end,
+    customKind: kind
+  });
+}
+
+function addItemAtPointer(day, clientY) {
+  if (!addMode || !day) return;
+  const item = createPresetItem(day, addMode, clientY);
+  if (!item) return;
+  day.items.push(item);
+  persistCustomItems();
+  renderDay(day);
+  renderProgress();
+  update();
 }
 
 function findOverlaps(day, activeItem, start, end) {
