@@ -811,11 +811,20 @@ function renderItem(day, item) {
   el.style.top = `${top}px`;
   el.style.height = `${height}px`;
 
+  const timeText = getItemTimeText(item);
+  const durationText = getDurationText(item);
+
   if (item.type === 'rest') {
-    el.innerHTML = `<div class="rest-text">${escapeHtml(item.text)}</div>`;
+    el.innerHTML = `
+      <div class="slot-content">
+        <div class="s-meta-line">${escapeHtml(timeText)}</div>
+        <div class="s-main-line">
+          <span class="s-main-text">${escapeHtml(item.text)}</span>
+          <span class="s-inline-dur">${escapeHtml(durationText)}</span>
+        </div>
+      </div>
+    `;
   } else {
-    const timeText = getItemTimeText(item);
-    const durationText = getDurationText(item);
     const metaLine = [timeText, item.label].filter(Boolean).join(' · ');
     el.innerHTML = `
       <div class="slot-content">
@@ -827,17 +836,18 @@ function renderItem(day, item) {
       </div>
     `;
 
-    if (item.editable) {
-      const topHandle = document.createElement('div');
-      topHandle.className = 'resize-handle top';
-      topHandle.dataset.mode = 'resize-start';
-      const bottomHandle = document.createElement('div');
-      bottomHandle.className = 'resize-handle bottom';
-      bottomHandle.dataset.mode = 'resize-end';
-      el.appendChild(topHandle);
-      el.appendChild(bottomHandle);
-      attachEditableEvents(el, day, item);
-    }
+  }
+
+  if (item.editable) {
+    const topHandle = document.createElement('div');
+    topHandle.className = 'resize-handle top';
+    topHandle.dataset.mode = 'resize-start';
+    const bottomHandle = document.createElement('div');
+    bottomHandle.className = 'resize-handle bottom';
+    bottomHandle.dataset.mode = 'resize-end';
+    el.appendChild(topHandle);
+    el.appendChild(bottomHandle);
+    attachEditableEvents(el, day, item);
   }
 
   item.renderEl = el;
