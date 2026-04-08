@@ -490,7 +490,8 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
 <script>
 const STORAGE_KEYS = {
   layout: 'study-plan-layout-v2',
-  done: 'study-plan-done-v2'
+  done: 'study-plan-done-v2',
+  custom: 'study-plan-custom-items-v1'
 };
 const SNAP_MINUTES = 15;
 const MIN_DURATION = 15;
@@ -509,12 +510,45 @@ const SUBJECTS = [
   { key: 'sust', label: 'Sust', cls: 'c-sust', barColor: '#0a4a44' },
   { key: 'cs', label: 'CS', cls: 'c-cs', barColor: '#6a3010' }
 ];
+const ADD_ITEM_PRESETS = {
+  review: {
+    type: 'task',
+    classes: ['sprint'],
+    label: '',
+    name: '複習 Session',
+    text: '',
+    duration: 60,
+    hasDuration: true,
+    durationSuffix: '',
+    subjectKey: null
+  },
+  rest: {
+    type: 'rest',
+    classes: ['rest'],
+    text: '休息',
+    duration: 15
+  },
+  lunch: {
+    type: 'rest',
+    classes: ['rest'],
+    text: '午休',
+    duration: 60
+  },
+  dinner: {
+    type: 'rest',
+    classes: ['rest'],
+    text: '晚餐',
+    duration: 60
+  }
+};
 
 const checkedSet = new Set(loadJson(STORAGE_KEYS.done, []));
 const layoutAdjustments = loadJson(STORAGE_KEYS.layout, {});
 const dayModels = [];
 let dragState = null;
 let overdueExpanded = false;
+let addMode = null;
+let customSequence = 0;
 
 function loadJson(key, fallback) {
   try {
@@ -650,6 +684,74 @@ function isTaskOverdue(task, now = new Date()) {
   const today = getMMDD(now);
   const nowMins = now.getHours() * 60 + now.getMinutes();
   return task.mmdd < today || (task.mmdd === today && task.endMins <= nowMins);
+}
+
+function nextCustomSid(kind) {
+  customSequence += 1;
+  return `custom-${kind}-${Date.now()}-${customSequence}`;
+}
+
+function buildCustomItem(record) {
+  const classes = [...(record.classes || (record.type === 'rest' ? ['rest'] : ['sprint']))];
+  const label = record.label || '';
+  const name = record.name || '';
+  return {
+    dayId: record.dayId,
+    originalDayId: record.originalDayId || record.dayId,
+    order: Number(record.order ?? Date.now()),
+    sid: record.sid,
+    classes,
+    label,
+    name,
+    text: record.text || '',
+    durationText: '',
+    durationSuffix: record.durationSuffix || '',
+    hasDuration: record.type === 'task' ? record.hasDuration !== false : false,
+    timeMode: 'range',
+    start: record.start,
+    end: record.end,
+    originalStart: record.originalStart ?? record.start,
+    originalEnd: record.originalEnd ?? record.end,
+    fixedDone: false,
+    editable: true,
+    isDragging: false,
+    type: record.type,
+    subjectKey: record.subjectKey ?? detectSubjectKey(classes, label, name),
+    renderEl: null,
+    custom: true,
+    customKind: record.customKind || null
+  };
+}
+
+function serialiseCustomItem(item) {
+  return {
+    sid: item.sid,
+    dayId: item.dayId,
+    originalDayId: item.originalDayId,
+    order: item.order,
+    type: item.type,
+    classes: item.classes,
+    label: item.label,
+    name: item.name,
+    text: item.text,
+    durationSuffix: item.durationSuffix,
+    hasDuration: item.hasDuration,
+    subjectKey: item.subjectKey,
+    start: item.start,
+    end: item.end,
+    originalStart: item.originalStart,
+    originalEnd: item.originalEnd,
+    customKind: item.customKind || null
+  };
+}
+
+function persistCustomItems() {
+  const customItems = dayModels.flatMap(day =>
+    day.items
+      .filter(item => item.custom)
+      .map(serialiseCustomItem)
+  );
+  saveJson(STORAGE_KEYS.custom, customItems);
 }
 
 function parseItem(slotEl, dayId, order) {
