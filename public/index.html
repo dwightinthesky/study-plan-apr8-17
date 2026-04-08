@@ -747,13 +747,16 @@ function getDisplayClasses(item) {
 }
 
 function getItemTimeText(item) {
-  if (item.type === 'rest' || item.type === 'marker' && item.timeMode === 'none') return '';
+  if (item.type === 'rest') return `${minsToHHMM(item.start)}–${minsToHHMM(item.end)}`;
+  if (item.type === 'marker' && item.timeMode === 'none') return '';
   if (item.timeMode === 'start') return minsToHHMM(item.start);
   return `${minsToHHMM(item.start)}–${minsToHHMM(item.end)}`;
 }
 
 function getDurationText(item) {
-  if (!item.hasDuration || item.type === 'marker') return '';
+  if (item.type === 'marker') return '';
+  if (item.type === 'rest') return formatDuration(item.end - item.start);
+  if (!item.hasDuration) return '';
   const base = formatDuration(item.end - item.start);
   return item.durationSuffix ? `${base} ${item.durationSuffix}` : base;
 }
@@ -875,11 +878,7 @@ function clampInterval(day, start, duration) {
 }
 
 function getBlockingItems(day, activeItem) {
-  return day.items.filter(item =>
-    item !== activeItem &&
-    item.type !== 'rest' &&
-    item.type !== 'marker'
-  );
+  return day.items.filter(item => item !== activeItem && item.type !== 'marker');
 }
 
 function findOverlaps(day, activeItem, start, end) {
