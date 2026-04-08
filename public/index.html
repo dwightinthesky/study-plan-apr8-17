@@ -88,6 +88,26 @@ nav .nav-title-small{font-size:.9em;margin-left:.28em;}
 .now-line::before{content:'';position:absolute;left:4px;top:-3.5px;width:7px;height:7px;background:var(--accent);border-radius:50%;}
 .now-label{position:absolute;left:14px;top:-9px;font-size:9px;color:var(--accent);font-family:'DM Mono',monospace;font-weight:500;background:var(--bg);padding:0 3px;z-index:11;pointer-events:none;}
 
+.edit-tools{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:0 2rem .2rem;color:var(--muted);font-size:10px;letter-spacing:.04em;}
+.edit-tools span{max-width:48rem;}
+.edit-tools button{border:1px solid var(--border2);background:var(--surface);color:var(--text);padding:.4rem .75rem;border-radius:999px;font:inherit;cursor:pointer;transition:background .15s,border-color .15s;}
+.edit-tools button:hover{background:var(--bg);border-color:var(--accent);}
+
+.timeline.enhanced{padding:8px 0 10px;overflow:hidden;}
+.timeline.enhanced .slot{position:absolute;left:6px;right:6px;margin:0;box-shadow:0 0 0 2px var(--bg);}
+.timeline.enhanced .slot.rest{z-index:1;pointer-events:none;opacity:.85;}
+.timeline.enhanced .slot.exam-slot{z-index:2;}
+.timeline.enhanced .slot.marker-slot{z-index:5;}
+.timeline.enhanced .slot[data-editable="true"]{z-index:4;cursor:grab;user-select:none;touch-action:none;}
+.timeline.enhanced .slot[data-editable="true"].dragging{cursor:grabbing;opacity:.95;}
+.timeline.enhanced .slot[data-editable="true"] .slot-content{height:100%;}
+.resize-handle{position:absolute;left:8px;right:8px;height:10px;z-index:6;}
+.resize-handle.top{top:-4px;cursor:ns-resize;}
+.resize-handle.bottom{bottom:-4px;cursor:ns-resize;}
+.resize-handle::after{content:'';display:block;width:28px;height:4px;margin:3px auto;border-radius:999px;background:currentColor;opacity:.22;}
+.time-guide{position:absolute;left:0;right:0;height:1px;background:rgba(26,25,22,.08);z-index:0;pointer-events:none;}
+.time-guide-label{position:absolute;left:8px;top:-7px;font-size:8px;color:var(--muted);background:var(--bg);padding:0 4px;z-index:0;pointer-events:none;}
+
 /* PROGRESS PAGE */
 .prog-wrap{padding:1.25rem 2rem;overflow-x:auto;}
 
@@ -154,8 +174,9 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
   .status-card{grid-template-columns:1fr;}
   .status-divider{display:none;}
   nav{padding:0 1rem;}
-  .page-header,.priority-row,.status-card,.days-grid,.clock-row,.prog-wrap{margin-left:0;margin-right:0;padding-left:1rem;padding-right:1rem;}
+  .page-header,.priority-row,.status-card,.days-grid,.clock-row,.prog-wrap,.edit-tools{margin-left:0;margin-right:0;padding-left:1rem;padding-right:1rem;}
   .prog-wrap{padding-left:.5rem;padding-right:.5rem;}
+  .edit-tools{align-items:flex-start;flex-direction:column;padding-bottom:.35rem;}
 }
 </style>
 </head>
@@ -180,6 +201,10 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
     <span class="pb sust">Sust</span>
   </div>
   <div class="clock-row" id="clock-prep">--:--</div>
+  <div class="edit-tools">
+    <span>拖曳色塊可移動時間，拖曳上下邊緣可調整時長。變更會儲存在這台裝置的瀏覽器。</span>
+    <button class="reset-layout-btn" type="button">重設時間</button>
+  </div>
   <div class="status-card">
     <div class="status-block">
       <label>目前 Session</label>
@@ -312,6 +337,10 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
   <div class="page-header"><span class="subtitle">Apr 13 – 17　考試週</span></div>
   <div class="priority-row"><span>邏輯：考前讀那科 → 考試 → 空檔讀下一科</span></div>
   <div class="clock-row" id="clock-exam">--:--</div>
+  <div class="edit-tools">
+    <span>拖曳色塊可移動時間，拖曳上下邊緣可調整時長。變更會儲存在這台裝置的瀏覽器。</span>
+    <button class="reset-layout-btn" type="button">重設時間</button>
+  </div>
   <div class="status-card">
     <div class="status-block">
       <label>目前 Session</label>
@@ -413,187 +442,587 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
 </div>
 
 <script>
-// ── schedule data (for status card) ──
-const prepSchedule=[
-  ["0408","13:00","14:00","EU W1 ① 初次複習"],["0408","14:00","15:00","EU W1 ② 初次 Essay"],
-  ["0408","15:15","16:00","EU W10+11 ③ 再次複習"],["0408","16:15","17:15","EU W10+11 ④ Essay 第二次"],
-  ["0408","18:15","19:45","Acct W4-6"],["0408","20:00","21:30","Stats W1+2"],
-  ["0408","21:45","22:45","Psych 1 Emotions"],["0408","22:45","23:15","Sust Ch.1–2 預習"],
-  ["0409","12:00","13:00","EU W8 ① 初次複習"],["0409","14:00","15:00","EU W8 ② 初次 Essay"],
-  ["0409","15:15","16:00","EU W8 ③ 再次複習"],["0409","16:15","17:15","EU W8 ④ Essay 第二次"],
-  ["0409","18:15","19:45","Acct W7"],["0409","20:00","21:30","Stats W3+4"],
-  ["0409","21:45","22:45","Psych 2 Culture"],["0409","22:45","23:15","Sust Ch.3–4 預習"],
-  ["0410","12:00","12:45","EU W1 ③ 再次複習"],["0410","13:00","14:00","EU W1 ④ Essay 第二次"],
-  ["0410","15:00","16:30","Acct W8"],["0410","16:45","18:15","Acct W9"],
-  ["0410","19:15","20:45","Stats W5+6"],["0410","21:00","22:00","Psych 3 Social Influence"],
-  ["0410","22:00","22:30","Sust Ch.5–6 預習"],["0410","22:30","23:00","Sust Ch.7–8 預習"],
-  ["0411","10:30","12:00","Acct W10"],["0411","13:30","15:00","Acct W11"],
-  ["0411","15:15","16:45","Stats W7+8"],["0411","17:00","19:00","Stats Mock"],
-  ["0411","20:00","21:00","Psych 4 Leadership"],["0411","21:15","22:15","Psych 5 Motivation"],
-  ["0411","22:15","22:45","Sust Ch.9–10 預習"],["0411","22:45","23:15","Sust Ch.11–13 預習"],
-  ["0412","10:30","12:30","EU Law 衝刺複習"],["0412","14:00","15:30","Acct 全科整理"],
-  ["0412","15:45","17:15","Stats 全科整理"],["0412","18:15","19:15","Psych 6 Identity"],
-  ["0412","19:30","20:30","Psych 7 Group Processes"],["0412","20:45","21:45","Psych 8 Prejudice"],
-  ["0412","21:45","22:15","Sust Seminar 1+2 預習"],["0412","22:15","22:45","Sust Seminar 3+4 預習"],
-];
-const examSchedule=[
-  ["0413","08:00","10:00","EU Law 衝刺複習"],["0413","13:00","14:30","Sust Ch.1–4 複習"],
-  ["0413","14:45","16:15","Sust Ch.5–9 複習"],["0414","08:00","10:00","Stats 衝刺複習"],
-  ["0414","13:00","14:30","Sust Ch.10–13 複習"],["0414","14:45","16:00","Sust 衝刺複習"],
-  ["0415","08:00","10:00","Acct 衝刺複習"],["0415","13:00","14:30","Psych 全科複習"],
-  ["0415","14:45","15:45","Excel Session 1"],["0416","08:00","10:00","Psych 衝刺複習"],
-  ["0416","13:00","14:00","Excel Session 2"],["0416","14:15","15:15","Excel Session 3"],
-  ["0416","15:30","16:30","Excel Session 4"],["0417","07:30","08:30","PowerPoint Session"],
-  ["0417","08:45","09:30","Word Session"],["0417","09:30","10:00","CS 衝刺複習"],
-];
-const prepDates=['0408','0409','0410','0411','0412'];
-const examDates=['0413','0414','0415','0416','0417'];
-
-// ── subject definitions ──
-const SUBJECTS=[
-  {key:'law',  label:'EU Law', cls:'c-law',  barColor:'#0a2d6e'},
-  {key:'acct', label:'Acct',   cls:'c-acct', barColor:'#1a5c10'},
-  {key:'stat', label:'Stats',  cls:'c-stat', barColor:'#5a4a0a'},
-  {key:'psych',label:'Psych',  cls:'c-psych',barColor:'#6a1a5a'},
-  {key:'sust', label:'Sust',   cls:'c-sust', barColor:'#0a4a44'},
-  {key:'cs',   label:'CS',     cls:'c-cs',   barColor:'#6a3010'},
+const STORAGE_KEYS = {
+  layout: 'study-plan-layout-v2',
+  done: 'study-plan-done-v2'
+};
+const SNAP_MINUTES = 15;
+const MIN_DURATION = 15;
+const PX_PER_MIN = 0.9;
+const SLOT_MIN_HEIGHT = 34;
+const MARKER_HEIGHT = 34;
+const TIMELINE_PADDING = 8;
+const prepDates = ['0408', '0409', '0410', '0411', '0412'];
+const examDates = ['0413', '0414', '0415', '0416', '0417'];
+const SUBJECTS = [
+  { key: 'law', label: 'EU Law', cls: 'c-law', barColor: '#0a2d6e' },
+  { key: 'acct', label: 'Acct', cls: 'c-acct', barColor: '#1a5c10' },
+  { key: 'stat', label: 'Stats', cls: 'c-stat', barColor: '#5a4a0a' },
+  { key: 'psych', label: 'Psych', cls: 'c-psych', barColor: '#6a1a5a' },
+  { key: 'sust', label: 'Sust', cls: 'c-sust', barColor: '#0a4a44' },
+  { key: 'cs', label: 'CS', cls: 'c-cs', barColor: '#6a3010' }
 ];
 
-// ── detect subject from slot element ──
-function detectKey(slot){
-  const cl=[...slot.classList];
-  if(cl.some(c=>c.startsWith('law')))return'law';
-  if(cl.includes('acct'))return'acct';
-  if(cl.includes('stat'))return'stat';
-  if(cl.includes('psych'))return'psych';
-  if(cl.includes('sust'))return'sust';
-  if(cl.includes('cs'))return'cs';
-  if(cl.includes('sprint')){
-    const n=slot.querySelector('.s-name')?.textContent||'';
-    if(n.includes('EU')||n.includes('Law'))return'law';
-    if(n.includes('Stats')||n.includes('Stat'))return'stat';
-    if(n.includes('Acct'))return'acct';
-    if(n.includes('Psych'))return'psych';
-    if(n.includes('Sust'))return'sust';
-    if(n.includes('CS')||n.includes('Excel')||n.includes('Word')||n.includes('PowerPoint'))return'cs';
+const checkedSet = new Set(loadJson(STORAGE_KEYS.done, []));
+const layoutAdjustments = loadJson(STORAGE_KEYS.layout, {});
+const dayModels = [];
+let dragState = null;
+
+function loadJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
   }
+}
+
+function saveJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function escapeHtml(text) {
+  return String(text ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function toMins(hhmm) {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function minsToHHMM(mins) {
+  const safe = Math.max(0, mins);
+  const hours = String(Math.floor(safe / 60)).padStart(2, '0');
+  const minutes = String(safe % 60).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+function formatDuration(mins) {
+  if (mins <= 0) return '0min';
+  if (mins < 60) return `${mins}min`;
+  if (mins % 60 === 0) return `${mins / 60}h`;
+  if (mins % 30 === 0) return `${(mins / 60).toFixed(1).replace('.0', '')}h`;
+  return `${Math.floor(mins / 60)}h ${mins % 60}min`;
+}
+
+function fmtTime(date) {
+  return date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+function getMMDD(date) {
+  return String(date.getMonth() + 1).padStart(2, '0') + String(date.getDate()).padStart(2, '0');
+}
+
+function roundToSnap(mins) {
+  return Math.round(mins / SNAP_MINUTES) * SNAP_MINUTES;
+}
+
+function splitDurationText(text) {
+  const source = (text || '').trim();
+  if (!source) return { suffix: '' };
+  const match = source.match(/^(?:\d+(?:\.\d+)?h(?:\d+|\s*\d+min)?|\d+min)\s*(.*)$/i);
+  return { suffix: match ? match[1].trim() : '' };
+}
+
+function detectSubjectKey(classes, label, name) {
+  if (classes.some(cls => cls.startsWith('law'))) return 'law';
+  if (classes.includes('acct')) return 'acct';
+  if (classes.includes('stat')) return 'stat';
+  if (classes.includes('psych')) return 'psych';
+  if (classes.includes('sust')) return 'sust';
+  if (classes.includes('cs')) return 'cs';
+
+  const text = `${label} ${name}`.trim();
+  if (text.includes('EU') || text.includes('Law')) return 'law';
+  if (text.includes('Acct')) return 'acct';
+  if (text.includes('Stats') || text.includes('Stat')) return 'stat';
+  if (text.includes('Psych')) return 'psych';
+  if (text.includes('Sust')) return 'sust';
+  if (text.includes('CS') || text.includes('Excel') || text.includes('Word') || text.includes('PowerPoint')) return 'cs';
   return null;
 }
 
-// ── collect all task slots (with data-sid) ──
-function collectTasks(){
-  return[...document.querySelectorAll('.timeline .slot[data-sid]')]
-    .filter(s=>!s.classList.contains('rest')&&!s.classList.contains('exam-slot'))
-    .map(slot=>{
-      const sid=slot.dataset.sid;
-      const key=detectKey(slot);
-      if(!key)return null;
-      const label=slot.querySelector('.s-label')?.textContent.trim()||'';
-      const name=slot.querySelector('.s-name')?.textContent.trim()||'';
-      const time=slot.querySelector('.s-time')?.textContent.trim()||'';
-      const dur=slot.querySelector('.s-dur')?.textContent.trim()||'';
-      const dayName=slot.closest('.day-col')?.querySelector('.dname')?.textContent.replace(' 今天','').trim()||'';
-      const tlId=slot.closest('.timeline')?.id||'';
-      const mmdd=tlId.replace('tl-','');
-      const startMins=slot.dataset.start?toMins(slot.dataset.start):0;
-      return{sid,key,label,name,time,dur,dayName,mmdd,startMins,el:slot};
-    }).filter(Boolean);
+function isItemDone(item) {
+  return item.fixedDone || (item.sid ? checkedSet.has(item.sid) : false);
 }
 
-// ── checked state (in-memory) ──
-const checkedSet=new Set();
+function parseItem(slotEl, dayId, order) {
+  const start = slotEl.dataset.start ? toMins(slotEl.dataset.start) : 0;
+  const end = slotEl.dataset.end ? toMins(slotEl.dataset.end) : start;
+  const classes = [...slotEl.classList].filter(cls => cls !== 'slot');
+  const label = slotEl.querySelector('.s-label')?.textContent.trim() || '';
+  const name = slotEl.querySelector('.s-name')?.textContent.trim() || '';
+  const durationText = slotEl.querySelector('.s-dur')?.textContent.trim() || '';
+  const timeText = slotEl.querySelector('.s-time')?.textContent.trim() || '';
+  const sid = slotEl.dataset.sid || null;
+  const fixedDone = slotEl.classList.contains('done') && start === end;
+  const editable = Boolean(sid) && !fixedDone;
+  const persisted = sid && layoutAdjustments[sid] ? layoutAdjustments[sid] : null;
 
-// Pre-populate already-done slots
-function initChecked(){
-  document.querySelectorAll('.timeline .slot[data-sid].done').forEach(s=>{
-    checkedSet.add(s.dataset.sid);
+  return {
+    dayId,
+    order,
+    sid,
+    classes,
+    label,
+    name,
+    text: slotEl.classList.contains('rest') ? slotEl.textContent.trim() : '',
+    durationText,
+    durationSuffix: splitDurationText(durationText).suffix,
+    hasDuration: Boolean(durationText),
+    timeMode: timeText.includes('–') ? 'range' : (timeText ? 'start' : 'none'),
+    start: persisted ? toMins(persisted.start) : start,
+    end: persisted ? toMins(persisted.end) : end,
+    originalStart: start,
+    originalEnd: end,
+    fixedDone,
+    editable,
+    isDragging: false,
+    type: slotEl.classList.contains('rest')
+      ? 'rest'
+      : slotEl.classList.contains('exam-slot')
+        ? 'exam'
+        : fixedDone
+          ? 'marker'
+          : 'task',
+    subjectKey: detectSubjectKey(classes, label, name),
+    renderEl: null
+  };
+}
+
+function parseInitialDom() {
+  document.querySelectorAll('.timeline').forEach(timelineEl => {
+    const dayEl = timelineEl.closest('.day-col');
+    if (!dayEl) return;
+    const dayId = timelineEl.id.replace('tl-', '');
+    const items = [...timelineEl.children]
+      .filter(child => child.classList?.contains('slot'))
+      .map((slotEl, order) => parseItem(slotEl, dayId, order));
+
+    items.forEach(item => {
+      if (item.fixedDone && item.sid) checkedSet.add(item.sid);
+    });
+
+    const timedItems = items.filter(item => item.end > item.start);
+    dayModels.push({
+      dayId,
+      dayEl,
+      timelineEl,
+      hoursEl: dayEl.querySelector('.dhours'),
+      dayName: dayEl.querySelector('.dname')?.textContent.replace(' 今天', '').trim() || dayId,
+      baseStart: Math.min(...timedItems.map(item => item.start)),
+      baseEnd: Math.max(...timedItems.map(item => item.end)),
+      items
+    });
   });
 }
 
-// Apply done class to all slots with matching sid
-function applyDone(sid,isDone){
-  document.querySelectorAll(`.slot[data-sid="${sid}"]`).forEach(slot=>{
-    if(isDone) slot.classList.add('done');
-    else slot.classList.remove('done');
+function getDisplayClasses(item) {
+  const classes = item.classes.filter(cls => cls !== 'done');
+  if (isItemDone(item)) classes.push('done');
+  if (item.type === 'marker') classes.push('marker-slot');
+  return classes.join(' ');
+}
+
+function getItemTimeText(item) {
+  if (item.type === 'rest' || item.type === 'marker' && item.timeMode === 'none') return '';
+  if (item.timeMode === 'start') return minsToHHMM(item.start);
+  return `${minsToHHMM(item.start)}–${minsToHHMM(item.end)}`;
+}
+
+function getDurationText(item) {
+  if (!item.hasDuration || item.type === 'marker') return '';
+  const base = formatDuration(item.end - item.start);
+  return item.durationSuffix ? `${base} ${item.durationSuffix}` : base;
+}
+
+function updateDayHours(day) {
+  if (!day.hoursEl) return;
+  const timed = day.items.filter(item => item.end > item.start);
+  if (!timed.length) return;
+  const start = Math.min(...timed.map(item => item.start));
+  const end = Math.max(...timed.map(item => item.end));
+  day.hoursEl.textContent = `${minsToHHMM(start)}–${minsToHHMM(end)}`;
+}
+
+function renderGuides(day) {
+  const fragment = document.createDocumentFragment();
+  const firstHour = Math.ceil(day.baseStart / 60) * 60;
+  for (let mins = firstHour; mins < day.baseEnd; mins += 60) {
+    const guide = document.createElement('div');
+    guide.className = 'time-guide';
+    guide.style.top = `${TIMELINE_PADDING + (mins - day.baseStart) * PX_PER_MIN}px`;
+    const label = document.createElement('div');
+    label.className = 'time-guide-label';
+    label.style.top = guide.style.top;
+    label.textContent = minsToHHMM(mins);
+    fragment.appendChild(guide);
+    fragment.appendChild(label);
+  }
+  return fragment;
+}
+
+function renderItem(day, item) {
+  const el = document.createElement('div');
+  el.className = `slot ${getDisplayClasses(item)}`.trim();
+  el.dataset.start = minsToHHMM(item.start);
+  el.dataset.end = minsToHHMM(item.end);
+  if (item.sid) el.dataset.sid = item.sid;
+  if (item.editable) el.dataset.editable = 'true';
+  if (item.isDragging) el.classList.add('dragging');
+
+  const top = TIMELINE_PADDING + (item.start - day.baseStart) * PX_PER_MIN;
+  const duration = Math.max(item.end - item.start, item.type === 'marker' ? 0 : MIN_DURATION);
+  const height = item.type === 'marker'
+    ? MARKER_HEIGHT
+    : Math.max(SLOT_MIN_HEIGHT, duration * PX_PER_MIN);
+
+  el.style.top = `${top}px`;
+  el.style.height = `${height}px`;
+
+  if (item.type === 'rest') {
+    el.textContent = item.text;
+  } else {
+    const timeText = getItemTimeText(item);
+    const durationText = getDurationText(item);
+    el.innerHTML = `
+      <div class="slot-content">
+        ${timeText ? `<div class="s-time">${escapeHtml(timeText)}</div>` : ''}
+        ${item.label ? `<div class="s-label">${escapeHtml(item.label)}</div>` : ''}
+        <div class="s-name">${escapeHtml(item.name)}</div>
+        ${durationText && !item.fixedDone ? `<div class="s-dur">${escapeHtml(durationText)}</div>` : ''}
+      </div>
+    `;
+
+    if (item.editable) {
+      const topHandle = document.createElement('div');
+      topHandle.className = 'resize-handle top';
+      topHandle.dataset.mode = 'resize-start';
+      const bottomHandle = document.createElement('div');
+      bottomHandle.className = 'resize-handle bottom';
+      bottomHandle.dataset.mode = 'resize-end';
+      el.appendChild(topHandle);
+      el.appendChild(bottomHandle);
+      attachEditableEvents(el, day, item);
+    }
+  }
+
+  item.renderEl = el;
+  return el;
+}
+
+function renderDay(day) {
+  const timelineEl = day.timelineEl;
+  timelineEl.classList.add('enhanced');
+  timelineEl.innerHTML = '';
+  timelineEl.style.height = `${(day.baseEnd - day.baseStart) * PX_PER_MIN + TIMELINE_PADDING * 2}px`;
+  timelineEl.appendChild(renderGuides(day));
+
+  [...day.items]
+    .sort((a, b) => a.start - b.start || a.order - b.order)
+    .forEach(item => timelineEl.appendChild(renderItem(day, item)));
+
+  updateDayHours(day);
+}
+
+function renderAllTimelines() {
+  dayModels.forEach(renderDay);
+}
+
+function findDay(dayId) {
+  return dayModels.find(day => day.dayId === dayId);
+}
+
+function clampInterval(day, start, duration) {
+  let nextStart = Math.max(day.baseStart, start);
+  const maxStart = day.baseEnd - duration;
+  if (nextStart > maxStart) nextStart = maxStart;
+  return { start: nextStart, end: nextStart + duration };
+}
+
+function getBlockingItems(day, activeItem) {
+  return day.items.filter(item =>
+    item !== activeItem &&
+    item.type !== 'rest' &&
+    item.type !== 'marker'
+  );
+}
+
+function findOverlaps(day, activeItem, start, end) {
+  return getBlockingItems(day, activeItem).filter(item => start < item.end && end > item.start);
+}
+
+function resolveMove(day, item, proposedStart, direction) {
+  const duration = item.end - item.start;
+  let { start, end } = clampInterval(day, proposedStart, duration);
+
+  for (let i = 0; i < 20; i += 1) {
+    const overlaps = findOverlaps(day, item, start, end);
+    if (!overlaps.length) break;
+
+    if (direction >= 0) {
+      start = Math.max(...overlaps.map(overlap => overlap.end));
+      end = start + duration;
+    } else {
+      end = Math.min(...overlaps.map(overlap => overlap.start));
+      start = end - duration;
+    }
+
+    ({ start, end } = clampInterval(day, start, duration));
+  }
+
+  return { start, end };
+}
+
+function resolveResizeStart(day, item, proposedStart) {
+  let start = Math.max(day.baseStart, Math.min(proposedStart, item.end - MIN_DURATION));
+
+  for (let i = 0; i < 20; i += 1) {
+    const overlaps = findOverlaps(day, item, start, item.end);
+    if (!overlaps.length) break;
+    start = Math.max(start, ...overlaps.map(overlap => overlap.end));
+    start = Math.min(start, item.end - MIN_DURATION);
+  }
+
+  return start;
+}
+
+function resolveResizeEnd(day, item, proposedEnd) {
+  let end = Math.min(day.baseEnd, Math.max(proposedEnd, item.start + MIN_DURATION));
+
+  for (let i = 0; i < 20; i += 1) {
+    const overlaps = findOverlaps(day, item, item.start, end);
+    if (!overlaps.length) break;
+    end = Math.min(end, ...overlaps.map(overlap => overlap.start));
+    end = Math.max(end, item.start + MIN_DURATION);
+  }
+
+  return end;
+}
+
+function persistLayoutAdjustments() {
+  Object.keys(layoutAdjustments).forEach(key => delete layoutAdjustments[key]);
+  dayModels.forEach(day => {
+    day.items.forEach(item => {
+      if (!item.editable || !item.sid) return;
+      if (item.start !== item.originalStart || item.end !== item.originalEnd) {
+        layoutAdjustments[item.sid] = {
+          start: minsToHHMM(item.start),
+          end: minsToHHMM(item.end)
+        };
+      }
+    });
+  });
+  saveJson(STORAGE_KEYS.layout, layoutAdjustments);
+}
+
+function persistDoneState() {
+  saveJson(STORAGE_KEYS.done, [...checkedSet]);
+}
+
+function renderActiveNowLine() {
+  const activePageId = document.querySelector('.page.active')?.id;
+  if (activePageId === 'page-prep') drawNowLine(prepDates);
+  else if (activePageId === 'page-exam') drawNowLine(examDates);
+  else document.querySelectorAll('.now-line,.now-label').forEach(el => el.remove());
+}
+
+function attachEditableEvents(el, day, item) {
+  const handleStart = event => {
+    if (dragState) return;
+    if (event.button !== 0) return;
+    const mode = event.target.closest('.resize-handle')?.dataset.mode || 'drag';
+    startEdit(event, day, item, mode);
+  };
+
+  el.addEventListener('pointerdown', handleStart);
+  el.addEventListener('mousedown', handleStart);
+}
+
+function startEdit(event, day, item, mode) {
+  event.preventDefault();
+  item.isDragging = true;
+  dragState = {
+    day,
+    item,
+    mode,
+    startY: event.clientY,
+    originalStart: item.start,
+    originalEnd: item.end,
+    lastDelta: null,
+    direction: 1
+  };
+
+  document.body.style.userSelect = 'none';
+  document.addEventListener('pointermove', onPointerMove);
+  document.addEventListener('mousemove', onPointerMove);
+  document.addEventListener('pointerup', onPointerUp);
+  document.addEventListener('mouseup', onPointerUp);
+  document.addEventListener('pointercancel', onPointerUp);
+}
+
+function onPointerMove(event) {
+  if (!dragState) return;
+  event.preventDefault();
+
+  const deltaMinutes = roundToSnap((event.clientY - dragState.startY) / PX_PER_MIN);
+  if (deltaMinutes === dragState.lastDelta) return;
+  dragState.lastDelta = deltaMinutes;
+
+  const { day, item, mode, originalStart, originalEnd } = dragState;
+
+  if (mode === 'drag') {
+    const direction = deltaMinutes === 0 ? dragState.direction : Math.sign(deltaMinutes);
+    dragState.direction = direction || 1;
+    const next = resolveMove(day, item, originalStart + deltaMinutes, dragState.direction);
+    item.start = next.start;
+    item.end = next.end;
+  } else if (mode === 'resize-start') {
+    item.start = resolveResizeStart(day, item, roundToSnap(originalStart + deltaMinutes));
+    item.end = originalEnd;
+  } else if (mode === 'resize-end') {
+    item.start = originalStart;
+    item.end = resolveResizeEnd(day, item, roundToSnap(originalEnd + deltaMinutes));
+  }
+
+  renderDay(day);
+  renderActiveNowLine();
+}
+
+function onPointerUp() {
+  if (!dragState) return;
+
+  dragState.item.isDragging = false;
+  persistLayoutAdjustments();
+  renderAllTimelines();
+  renderProgress();
+  update();
+
+  dragState = null;
+  document.body.style.userSelect = '';
+  document.removeEventListener('pointermove', onPointerMove);
+  document.removeEventListener('mousemove', onPointerMove);
+  document.removeEventListener('pointerup', onPointerUp);
+  document.removeEventListener('mouseup', onPointerUp);
+  document.removeEventListener('pointercancel', onPointerUp);
+}
+
+function resetLayout() {
+  dayModels.forEach(day => {
+    day.items.forEach(item => {
+      if (!item.editable) return;
+      item.start = item.originalStart;
+      item.end = item.originalEnd;
+    });
+  });
+  saveJson(STORAGE_KEYS.layout, {});
+  renderAllTimelines();
+  renderProgress();
+  update();
+}
+
+function bindResetButtons() {
+  document.querySelectorAll('.reset-layout-btn').forEach(button => {
+    button.addEventListener('click', resetLayout);
   });
 }
 
-function toMins(hhmm){const[h,m]=hhmm.split(':').map(Number);return h*60+m;}
-function fmtDur(mins){if(mins<=0)return'0min';const h=Math.floor(mins/60),m=mins%60;if(h===0)return m+'min';if(m===0)return h+'h';return h+'h '+m+'min';}
-function fmtTime(d){return d.toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit',hour12:false});}
-function getMMDD(d){return String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');}
+function collectTasks() {
+  return dayModels.flatMap(day =>
+    day.items
+      .filter(item => item.sid && item.subjectKey && item.type !== 'rest' && item.type !== 'exam')
+      .map(item => ({
+        sid: item.sid,
+        key: item.subjectKey,
+        label: item.label,
+        name: item.name,
+        time: getItemTimeText(item),
+        dur: getDurationText(item),
+        dayName: day.dayName,
+        mmdd: day.dayId,
+        startMins: item.start,
+        fixedDone: item.fixedDone
+      }))
+  );
+}
 
-// ── progress page render ──
-function renderProgress(){
-  const tasks=collectTasks();
-  const total=tasks.length;
-  const doneCount=tasks.filter(t=>checkedSet.has(t.sid)).length;
-  const pending=total-doneCount;
+function renderProgress() {
+  const tasks = collectTasks();
+  const total = tasks.length;
+  const doneCount = tasks.filter(task => checkedSet.has(task.sid) || task.fixedDone).length;
+  const pending = total - doneCount;
 
-  // summary bar
-  document.getElementById('prog-summary').innerHTML=`
+  document.getElementById('prog-summary').innerHTML = `
     <div class="prog-summary-card"><label>總任務</label><div class="sv">${total}</div><div class="ss">全部讀書項目</div></div>
     <div class="prog-summary-card"><label>已完成</label><div class="sv" style="color:#1a7a10">${doneCount}</div><div class="ss">勾選完成</div></div>
     <div class="prog-summary-card"><label>未完成</label><div class="sv" style="color:var(--accent)">${pending}</div><div class="ss">待讀項目</div></div>
   `;
 
-  // 6 cols
-  const colsEl=document.getElementById('prog-cols');
-  colsEl.innerHTML='';
+  const colsEl = document.getElementById('prog-cols');
+  colsEl.innerHTML = '';
 
-  SUBJECTS.forEach(sub=>{
-    const subTasks=tasks
-      .filter(t=>t.key===sub.key)
-      .sort((a,b)=>{
-        const ad=checkedSet.has(a.sid),bd=checkedSet.has(b.sid);
-        if(ad!==bd)return Number(ad)-Number(bd);
-        if(a.mmdd!==b.mmdd)return a.mmdd.localeCompare(b.mmdd);
-        return a.startMins-b.startMins;
+  SUBJECTS.forEach(subject => {
+    const subjectTasks = tasks
+      .filter(task => task.key === subject.key)
+      .sort((a, b) => {
+        const aDone = checkedSet.has(a.sid) || a.fixedDone;
+        const bDone = checkedSet.has(b.sid) || b.fixedDone;
+        if (aDone !== bDone) return Number(aDone) - Number(bDone);
+        if (a.mmdd !== b.mmdd) return a.mmdd.localeCompare(b.mmdd);
+        return a.startMins - b.startMins;
       });
-    const dc=subTasks.filter(t=>checkedSet.has(t.sid)).length;
-    const pct=subTasks.length?Math.round(dc/subTasks.length*100):0;
 
-    const col=document.createElement('div');
-    col.className=`prog-col ${sub.cls}`;
+    const completed = subjectTasks.filter(task => checkedSet.has(task.sid) || task.fixedDone).length;
+    const pct = subjectTasks.length ? Math.round((completed / subjectTasks.length) * 100) : 0;
+    const col = document.createElement('div');
+    col.className = `prog-col ${subject.cls}`;
 
-    const head=document.createElement('div');
-    head.className='prog-col-head';
-    head.innerHTML=`
-      <div class="pch-title">${sub.label}</div>
-      <div class="pch-count">${dc} / ${subTasks.length} 完成</div>
-      <div class="pch-bar"><div class="pch-bar-fill" style="width:${pct}%;background:${sub.barColor}"></div></div>
+    col.innerHTML = `
+      <div class="prog-col-head">
+        <div class="pch-title">${subject.label}</div>
+        <div class="pch-count">${completed} / ${subjectTasks.length} 完成</div>
+        <div class="pch-bar"><div class="pch-bar-fill" style="width:${pct}%;background:${subject.barColor}"></div></div>
+      </div>
     `;
-    col.appendChild(head);
 
-    subTasks.forEach(task=>{
-      const isDone=checkedSet.has(task.sid);
-      const item=document.createElement('div');
-      item.className='task-item'+(isDone?' is-done':'');
-      item.dataset.sid=task.sid;
+    subjectTasks.forEach(task => {
+      const isDone = checkedSet.has(task.sid) || task.fixedDone;
+      const item = document.createElement('div');
+      item.className = `task-item${isDone ? ' is-done' : ''}`;
+      item.dataset.sid = task.sid;
+      const meta = [task.dayName, task.time].filter(Boolean).join(' · ');
 
-      const meta=[task.dayName,task.time].filter(Boolean).join(' · ');
-      item.innerHTML=`
-        <input type="checkbox" ${isDone?'checked':''}>
+      item.innerHTML = `
+        <input type="checkbox" ${isDone ? 'checked' : ''} ${task.fixedDone ? 'disabled' : ''}>
         <div class="ti-body">
-          ${meta?`<div class="ti-meta">${meta}</div>`:''}
-          ${task.label?`<div class="ti-label">${task.label}</div>`:''}
-          <div class="ti-name">${task.name}</div>
-          ${task.dur&&!isDone?`<div class="ti-dur">${task.dur}</div>`:''}
+          ${meta ? `<div class="ti-meta">${escapeHtml(meta)}</div>` : ''}
+          ${task.label ? `<div class="ti-label">${escapeHtml(task.label)}</div>` : ''}
+          <div class="ti-name">${escapeHtml(task.name)}</div>
+          ${task.dur && !isDone ? `<div class="ti-dur">${escapeHtml(task.dur)}</div>` : ''}
         </div>
       `;
 
-      const cb=item.querySelector('input');
-      cb.addEventListener('change',e=>{
-        e.stopPropagation();
-        const sid=item.dataset.sid;
-        if(cb.checked){checkedSet.add(sid);}else{checkedSet.delete(sid);}
-        applyDone(sid,cb.checked);
-        renderProgress(); // re-render to reorder
+      const checkbox = item.querySelector('input');
+      checkbox.addEventListener('change', event => {
+        event.stopPropagation();
+        if (task.fixedDone) return;
+        if (checkbox.checked) checkedSet.add(task.sid);
+        else checkedSet.delete(task.sid);
+        persistDoneState();
+        renderAllTimelines();
+        renderProgress();
+        update();
       });
-      item.addEventListener('click',e=>{
-        if(e.target===cb)return;
-        cb.checked=!cb.checked;
-        cb.dispatchEvent(new Event('change'));
+
+      item.addEventListener('click', event => {
+        if (event.target === checkbox || task.fixedDone) return;
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event('change'));
       });
 
       col.appendChild(item);
@@ -603,74 +1032,172 @@ function renderProgress(){
   });
 }
 
-// ── status card ──
-function updateStatus(schedule,dates,prefix,clockId){
-  const now=new Date(),mmdd=getMMDD(now),nowMins=now.getHours()*60+now.getMinutes();
-  document.getElementById(clockId).textContent='現在時間 '+fmtTime(now);
-  const today=schedule.filter(s=>s[0]===mmdd);
-  let cur=null,next=null;
-  for(const s of today){if(nowMins>=toMins(s[1])&&nowMins<toMins(s[2])){cur=s;break;}}
-  for(const s of today){if(toMins(s[1])>nowMins){next=s;break;}}
-  if(!next){const idx=dates.indexOf(mmdd);if(idx>=0&&idx<dates.length-1){const tm=schedule.filter(s=>s[0]===dates[idx+1]);if(tm.length)next=tm[0];}}
-  if(cur){document.getElementById(prefix+'-cur-name').textContent=cur[3];document.getElementById(prefix+'-cur-time').textContent=cur[1]+' – '+cur[2];document.getElementById(prefix+'-cur-left').textContent=fmtDur(toMins(cur[2])-nowMins);}
-  else{document.getElementById(prefix+'-cur-name').textContent='休息 / 空檔';document.getElementById(prefix+'-cur-time').textContent='—';document.getElementById(prefix+'-cur-left').textContent='—';}
-  if(next){document.getElementById(prefix+'-next-name').textContent=next[3];document.getElementById(prefix+'-next-time').textContent=next[1]+' – '+next[2];const diff=next[0]===mmdd?toMins(next[1])-nowMins:(24*60-nowMins)+toMins(next[1]);document.getElementById(prefix+'-next-left').textContent=fmtDur(Math.max(0,diff));}
-  else{document.getElementById(prefix+'-next-name').textContent='計劃結束';document.getElementById(prefix+'-next-time').textContent='—';document.getElementById(prefix+'-next-left').textContent='—';}
+function buildSchedule(dates) {
+  return dayModels
+    .filter(day => dates.includes(day.dayId))
+    .flatMap(day =>
+      day.items
+        .filter(item => item.type === 'task' && !isItemDone(item))
+        .map(item => [
+          day.dayId,
+          minsToHHMM(item.start),
+          minsToHHMM(item.end),
+          [item.label, item.name].filter(Boolean).join(' ')
+        ])
+    )
+    .sort((a, b) => a[0].localeCompare(b[0]) || toMins(a[1]) - toMins(b[1]));
 }
 
-// ── now line ──
-function drawNowLine(dates){
-  document.querySelectorAll('.now-line,.now-label').forEach(e=>e.remove());
-  const now=new Date(),mmdd=getMMDD(now);
-  if(!dates.includes(mmdd))return;
-  const nowMins=now.getHours()*60+now.getMinutes();
-  const tl=document.getElementById('tl-'+mmdd);
-  if(!tl)return;
-  const slots=[...tl.querySelectorAll('[data-start][data-end]')]
-    .filter(s=>s.dataset.start!==s.dataset.end)
-    .map(s=>({el:s,start:toMins(s.dataset.start),end:toMins(s.dataset.end)}))
-    .sort((a,b)=>a.start-b.start);
-  if(!slots.length)return;
-  let dS=99999,dE=0;
-  slots.forEach(s=>{if(s.start<dS)dS=s.start;if(s.end>dE)dE=s.end;});
-  if(nowMins<dS||nowMins>dE)return;
-  let topPx=null;
-  const cur=slots.find(s=>nowMins>=s.start&&nowMins<=s.end);
-  if(cur){const r=(nowMins-cur.start)/Math.max(1,cur.end-cur.start);topPx=cur.el.offsetTop+r*cur.el.offsetHeight;}
-  else{for(let i=0;i<slots.length-1;i++){const p=slots[i],n=slots[i+1];if(nowMins>p.end&&nowMins<n.start){const r=(nowMins-p.end)/(n.start-p.end);topPx=(p.el.offsetTop+p.el.offsetHeight)+r*(n.el.offsetTop-(p.el.offsetTop+p.el.offsetHeight));break;}}}
-  if(topPx===null)return;
-  topPx=Math.max(0,Math.min(topPx,tl.scrollHeight));
-  const line=document.createElement('div');line.className='now-line';line.style.top=topPx+'px';
-  const lbl=document.createElement('div');lbl.className='now-label';lbl.style.top=topPx+'px';lbl.textContent=fmtTime(now);
-  tl.appendChild(line);tl.appendChild(lbl);
+function updateStatus(dates, prefix, clockId) {
+  const schedule = buildSchedule(dates);
+  const now = new Date();
+  const mmdd = getMMDD(now);
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  document.getElementById(clockId).textContent = `現在時間 ${fmtTime(now)}`;
+
+  const today = schedule.filter(slot => slot[0] === mmdd);
+  let current = null;
+  let next = null;
+
+  for (const slot of today) {
+    if (nowMins >= toMins(slot[1]) && nowMins < toMins(slot[2])) {
+      current = slot;
+      break;
+    }
+  }
+
+  for (const slot of today) {
+    if (toMins(slot[1]) > nowMins) {
+      next = slot;
+      break;
+    }
+  }
+
+  if (!next) {
+    const idx = dates.indexOf(mmdd);
+    if (idx >= 0 && idx < dates.length - 1) {
+      next = schedule.find(slot => slot[0] === dates[idx + 1]) || null;
+    }
+  }
+
+  if (current) {
+    document.getElementById(`${prefix}-cur-name`).textContent = current[3];
+    document.getElementById(`${prefix}-cur-time`).textContent = `${current[1]} – ${current[2]}`;
+    document.getElementById(`${prefix}-cur-left`).textContent = formatDuration(toMins(current[2]) - nowMins);
+  } else {
+    document.getElementById(`${prefix}-cur-name`).textContent = '休息 / 空檔';
+    document.getElementById(`${prefix}-cur-time`).textContent = '—';
+    document.getElementById(`${prefix}-cur-left`).textContent = '—';
+  }
+
+  if (next) {
+    document.getElementById(`${prefix}-next-name`).textContent = next[3];
+    document.getElementById(`${prefix}-next-time`).textContent = `${next[1]} – ${next[2]}`;
+    const diff = next[0] === mmdd
+      ? toMins(next[1]) - nowMins
+      : (24 * 60 - nowMins) + toMins(next[1]);
+    document.getElementById(`${prefix}-next-left`).textContent = formatDuration(Math.max(0, diff));
+  } else {
+    document.getElementById(`${prefix}-next-name`).textContent = '計劃結束';
+    document.getElementById(`${prefix}-next-time`).textContent = '—';
+    document.getElementById(`${prefix}-next-left`).textContent = '—';
+  }
 }
 
-function update(){
-  updateStatus(prepSchedule,prepDates,'prep','clock-prep');
-  updateStatus(examSchedule,examDates,'exam','clock-exam');
-  const active=document.querySelector('.page.active').id;
-  if(active==='page-prep')drawNowLine(prepDates);
-  else if(active==='page-exam')drawNowLine(examDates);
-  else document.querySelectorAll('.now-line,.now-label').forEach(e=>e.remove());
+function drawNowLine(dates) {
+  document.querySelectorAll('.now-line,.now-label').forEach(el => el.remove());
+
+  const now = new Date();
+  const mmdd = getMMDD(now);
+  if (!dates.includes(mmdd)) return;
+  const day = findDay(mmdd);
+  if (!day) return;
+
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  const timelineEl = day.timelineEl;
+  const slots = day.items
+    .filter(item => item.renderEl && item.end > item.start && item.type !== 'marker')
+    .map(item => ({ el: item.renderEl, start: item.start, end: item.end }))
+    .sort((a, b) => a.start - b.start);
+
+  if (!slots.length) return;
+
+  const dayStart = Math.min(...slots.map(slot => slot.start));
+  const dayEnd = Math.max(...slots.map(slot => slot.end));
+  if (nowMins < dayStart || nowMins > dayEnd) return;
+
+  let topPx = null;
+  const current = slots.find(slot => nowMins >= slot.start && nowMins <= slot.end);
+
+  if (current) {
+    const ratio = (nowMins - current.start) / Math.max(1, current.end - current.start);
+    topPx = current.el.offsetTop + ratio * current.el.offsetHeight;
+  } else {
+    for (let i = 0; i < slots.length - 1; i += 1) {
+      const prev = slots[i];
+      const next = slots[i + 1];
+      if (nowMins > prev.end && nowMins < next.start) {
+        const ratio = (nowMins - prev.end) / (next.start - prev.end);
+        topPx = (prev.el.offsetTop + prev.el.offsetHeight) + ratio * (next.el.offsetTop - (prev.el.offsetTop + prev.el.offsetHeight));
+        break;
+      }
+    }
+  }
+
+  if (topPx === null) return;
+
+  const line = document.createElement('div');
+  line.className = 'now-line';
+  line.style.top = `${topPx}px`;
+  const label = document.createElement('div');
+  label.className = 'now-label';
+  label.style.top = `${topPx}px`;
+  label.textContent = fmtTime(now);
+  timelineEl.appendChild(line);
+  timelineEl.appendChild(label);
 }
 
-function switchTab(tab){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('nav a[id^=tab]').forEach(a=>a.classList.remove('active'));
-  document.getElementById('page-'+tab).classList.add('active');
-  document.getElementById('tab-'+tab).classList.add('active');
-  if(tab==='progress'){document.querySelectorAll('.now-line,.now-label').forEach(e=>e.remove());renderProgress();}
-  else{const d=tab==='prep'?prepDates:examDates;drawNowLine(d);}
+function update() {
+  updateStatus(prepDates, 'prep', 'clock-prep');
+  updateStatus(examDates, 'exam', 'clock-exam');
+  const active = document.querySelector('.page.active')?.id;
+  if (active === 'page-prep') drawNowLine(prepDates);
+  else if (active === 'page-exam') drawNowLine(examDates);
+  else document.querySelectorAll('.now-line,.now-label').forEach(el => el.remove());
 }
 
-// ── init ──
-initChecked();
+function switchTab(tab) {
+  document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+  document.querySelectorAll('nav a[id^=tab]').forEach(link => link.classList.remove('active'));
+  document.getElementById(`page-${tab}`).classList.add('active');
+  document.getElementById(`tab-${tab}`).classList.add('active');
+
+  if (tab === 'progress') {
+    document.querySelectorAll('.now-line,.now-label').forEach(el => el.remove());
+    renderProgress();
+  } else if (tab === 'prep') {
+    drawNowLine(prepDates);
+  } else {
+    drawNowLine(examDates);
+  }
+}
+
+parseInitialDom();
+bindResetButtons();
+renderAllTimelines();
 renderProgress();
-const todayMMDD=getMMDD(new Date());
-if(examDates.includes(todayMMDD))switchTab('exam');
+
+const todayMMDD = getMMDD(new Date());
+if (examDates.includes(todayMMDD)) switchTab('exam');
+else switchTab('prep');
+
 update();
-setInterval(update,30000);
-window.addEventListener('resize',update);
+setInterval(update, 30000);
+window.addEventListener('resize', () => {
+  renderAllTimelines();
+  renderProgress();
+  update();
+});
 </script>
 </body>
 </html>
