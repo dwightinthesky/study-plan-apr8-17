@@ -612,12 +612,29 @@ function parseInitialDom() {
     dayModels.push({
       dayId,
       dayEl,
+      gridEl: timelineEl.closest('.days-grid'),
       timelineEl,
       hoursEl: dayEl.querySelector('.dhours'),
       dayName: dayEl.querySelector('.dname')?.textContent.replace(' 今天', '').trim() || dayId,
       baseStart: Math.min(...timedItems.map(item => item.start)),
       baseEnd: Math.max(...timedItems.map(item => item.end)),
       items
+    });
+  });
+
+  const groups = new Map();
+  dayModels.forEach(day => {
+    const days = groups.get(day.gridEl) || [];
+    days.push(day);
+    groups.set(day.gridEl, days);
+  });
+
+  groups.forEach(days => {
+    const renderStart = Math.min(...days.map(day => day.baseStart));
+    const renderEnd = Math.max(...days.map(day => day.baseEnd));
+    days.forEach(day => {
+      day.renderStart = renderStart;
+      day.renderEnd = renderEnd;
     });
   });
 }
@@ -652,11 +669,13 @@ function updateDayHours(day) {
 
 function renderGuides(day) {
   const fragment = document.createDocumentFragment();
-  const firstHour = Math.ceil(day.baseStart / 60) * 60;
-  for (let mins = firstHour; mins < day.baseEnd; mins += 60) {
+  const renderStart = day.renderStart ?? day.baseStart;
+  const renderEnd = day.renderEnd ?? day.baseEnd;
+  const firstHour = Math.ceil(renderStart / 60) * 60;
+  for (let mins = firstHour; mins < renderEnd; mins += 60) {
     const guide = document.createElement('div');
     guide.className = 'time-guide';
-    guide.style.top = `${TIMELINE_PADDING + (mins - day.baseStart) * PX_PER_MIN}px`;
+    guide.style.top = `${TIMELINE_PADDING + (mins - renderStart) * PX_PER_MIN}px`;
     const label = document.createElement('div');
     label.className = 'time-guide-label';
     label.style.top = guide.style.top;
@@ -676,7 +695,8 @@ function renderItem(day, item) {
   if (item.editable) el.dataset.editable = 'true';
   if (item.isDragging) el.classList.add('dragging');
 
-  const top = TIMELINE_PADDING + (item.start - day.baseStart) * PX_PER_MIN;
+  const renderStart = day.renderStart ?? day.baseStart;
+  const top = TIMELINE_PADDING + (item.start - renderStart) * PX_PER_MIN;
   const duration = Math.max(item.end - item.start, item.type === 'marker' ? 0 : MIN_DURATION);
   const height = item.type === 'marker'
     ? MARKER_HEIGHT
@@ -718,9 +738,11 @@ function renderItem(day, item) {
 
 function renderDay(day) {
   const timelineEl = day.timelineEl;
+  const renderStart = day.renderStart ?? day.baseStart;
+  const renderEnd = day.renderEnd ?? day.baseEnd;
   timelineEl.classList.add('enhanced');
   timelineEl.innerHTML = '';
-  timelineEl.style.height = `${(day.baseEnd - day.baseStart) * PX_PER_MIN + TIMELINE_PADDING * 2}px`;
+  timelineEl.style.height = `${(renderEnd - renderStart) * PX_PER_MIN + TIMELINE_PADDING * 2}px`;
   timelineEl.appendChild(renderGuides(day));
 
   [...day.items]
@@ -739,8 +761,10 @@ function findDay(dayId) {
 }
 
 function clampInterval(day, start, duration) {
-  let nextStart = Math.max(day.baseStart, start);
-  const maxStart = day.baseEnd - duration;
+  const renderStart = day.renderStart ?? day.baseStart;
+  const renderEnd = day.renderEnd ?? day.baseEnd;
+  let nextStart = Math.max(renderStart, start);
+  const maxStart = renderEnd - duration;
   if (nextStart > maxStart) nextStart = maxStart;
   return { start: nextStart, end: nextStart + duration };
 }
@@ -780,7 +804,8 @@ function resolveMove(day, item, proposedStart, direction) {
 }
 
 function resolveResizeStart(day, item, proposedStart) {
-  let start = Math.max(day.baseStart, Math.min(proposedStart, item.end - MIN_DURATION));
+  const renderStart = day.renderStart ?? day.baseStart;
+  let start = Math.max(renderStart, Math.min(proposedStart, item.end - MIN_DURATION));
 
   for (let i = 0; i < 20; i += 1) {
     const overlaps = findOverlaps(day, item, start, item.end);
@@ -793,7 +818,8 @@ function resolveResizeStart(day, item, proposedStart) {
 }
 
 function resolveResizeEnd(day, item, proposedEnd) {
-  let end = Math.min(day.baseEnd, Math.max(proposedEnd, item.start + MIN_DURATION));
+  const renderEnd = day.renderEnd ?? day.baseEnd;
+  let end = Math.min(renderEnd, Math.max(proposedEnd, item.start + MIN_DURATION));
 
   for (let i = 0; i < 20; i += 1) {
     const overlaps = findOverlaps(day, item, item.start, end);
