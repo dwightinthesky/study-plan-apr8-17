@@ -626,7 +626,8 @@ function parseItem(slotEl, dayId, order) {
   const durationText = slotEl.querySelector('.s-dur')?.textContent.trim() || '';
   const timeText = slotEl.querySelector('.s-time')?.textContent.trim() || '';
   const sid = slotEl.dataset.sid || null;
-  const fixedDone = slotEl.classList.contains('done') && start === end;
+  const fixedDone = slotEl.classList.contains('done') && ((slotEl.querySelector('.s-name')?.textContent || '').includes('已完成'));
+  const markerDone = fixedDone && start === end;
   const editable = Boolean(sid) && !fixedDone;
   const persisted = sid && layoutAdjustments[sid] ? layoutAdjustments[sid] : null;
 
@@ -654,7 +655,7 @@ function parseItem(slotEl, dayId, order) {
       ? 'rest'
       : slotEl.classList.contains('exam-slot')
         ? 'exam'
-        : fixedDone
+        : markerDone
           ? 'marker'
           : 'task',
     subjectKey: detectSubjectKey(classes, label, name),
