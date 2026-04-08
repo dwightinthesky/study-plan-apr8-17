@@ -101,6 +101,7 @@ nav .nav-title-small{font-size:.9em;margin-left:.28em;}
 .timeline.enhanced .slot[data-editable="true"]{z-index:4;cursor:grab;user-select:none;touch-action:none;}
 .timeline.enhanced .slot[data-editable="true"].dragging{cursor:grabbing;opacity:.95;}
 .timeline.enhanced .slot[data-editable="true"] .slot-content{height:100%;}
+.day-col.drop-target{box-shadow:inset 0 0 0 2px rgba(187,61,47,.35);z-index:1;}
 .resize-handle{position:absolute;left:8px;right:8px;height:10px;z-index:6;}
 .resize-handle.top{top:-4px;cursor:ns-resize;}
 .resize-handle.bottom{bottom:-4px;cursor:ns-resize;}
@@ -117,6 +118,17 @@ nav .nav-title-small{font-size:.9em;margin-left:.28em;}
 .prog-summary-card label{display:block;font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
 .prog-summary-card .sv{font-family:'Fraunces',serif;font-size:1.5rem;font-weight:600;color:var(--text);line-height:1;}
 .prog-summary-card .ss{font-size:10px;color:var(--muted);margin-top:3px;}
+.prog-summary-card-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;}
+.prog-summary-card-head label{margin-bottom:0;}
+.summary-toggle{border:1px solid var(--border2);background:var(--bg);color:var(--text);width:22px;height:22px;border-radius:999px;font:600 10px/1 'DM Mono',monospace;cursor:pointer;transition:transform .15s,background .15s,border-color .15s;}
+.summary-toggle:hover{background:var(--surface);border-color:var(--accent);}
+.summary-toggle.is-open{transform:rotate(180deg);}
+.summary-toggle:disabled{opacity:.35;cursor:default;}
+.overdue-panel{display:none;border:1px solid var(--border);border-radius:4px;background:var(--surface);margin-bottom:1.25rem;overflow:hidden;}
+.overdue-panel.is-open{display:block;}
+.overdue-panel-head{padding:.8rem 1rem;border-bottom:1px solid var(--border);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
+.overdue-list{padding:.45rem 0 .7rem;}
+.overdue-empty{padding:.9rem 1rem;font-size:11px;color:var(--muted);}
 
 /* 6-col subject grid */
 .prog-cols{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;min-width:900px;}
@@ -155,6 +167,13 @@ nav .nav-title-small{font-size:.9em;margin-left:.28em;}
 .prog-col.c-psych .task-item{background:var(--psych);color:var(--psycht);}
 .prog-col.c-sust .task-item{background:var(--sust);color:var(--sustt);}
 .prog-col.c-cs .task-item{background:var(--cs);color:var(--cst);}
+.task-item.c-law{background:var(--law-1);color:var(--law-1t);}
+.task-item.c-acct{background:var(--acct);color:var(--acctt);}
+.task-item.c-stat{background:var(--stat);color:var(--statt);}
+.task-item.c-psych{background:var(--psych);color:var(--psycht);}
+.task-item.c-sust{background:var(--sust);color:var(--sustt);}
+.task-item.c-cs{background:var(--cs);color:var(--cst);}
+.task-item.is-overdue{box-shadow:inset 2px 0 0 var(--accent);}
 
 .prog-col.c-law .pch-bar-fill{background:var(--law-3t);}
 .prog-col.c-acct .pch-bar-fill{background:var(--acctt);}
@@ -202,7 +221,7 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
   </div>
   <div class="clock-row" id="clock-prep">--:--</div>
   <div class="edit-tools">
-    <span>拖曳色塊可移動時間，拖曳上下邊緣可調整時長。變更會儲存在這台裝置的瀏覽器。</span>
+    <span>拖曳色塊可移動時間，也可以橫向拖到別天；拖曳上下邊緣可調整時長。變更會儲存在這台裝置的瀏覽器。</span>
     <button class="reset-layout-btn" type="button">重設時間</button>
   </div>
   <div class="status-card">
@@ -338,7 +357,7 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
   <div class="priority-row"><span>邏輯：考前讀那科 → 考試 → 空檔讀下一科</span></div>
   <div class="clock-row" id="clock-exam">--:--</div>
   <div class="edit-tools">
-    <span>拖曳色塊可移動時間，拖曳上下邊緣可調整時長。變更會儲存在這台裝置的瀏覽器。</span>
+    <span>拖曳色塊可移動時間，也可以橫向拖到別天；拖曳上下邊緣可調整時長。變更會儲存在這台裝置的瀏覽器。</span>
     <button class="reset-layout-btn" type="button">重設時間</button>
   </div>
   <div class="status-card">
@@ -434,6 +453,7 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
   <div class="page-header"><span class="subtitle">各科進度</span></div>
   <div class="prog-wrap">
     <div class="prog-summary" id="prog-summary"></div>
+    <div class="overdue-panel" id="overdue-panel"></div>
     <div style="overflow-x:auto;">
       <div class="prog-cols" id="prog-cols"></div>
     </div>
