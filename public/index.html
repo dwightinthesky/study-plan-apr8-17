@@ -1183,6 +1183,7 @@ function createPresetItem(day, kind, clientY) {
 
 function addItemAtPointer(day, clientY) {
   if (!addMode || !day) return;
+  hideSlotMenu();
   const item = createPresetItem(day, addMode, clientY);
   if (!item) return;
   day.items.push(item);
@@ -1397,6 +1398,7 @@ function attachEditableEvents(el, day, item) {
 
 function startEdit(event, day, item, mode) {
   event.preventDefault();
+  hideSlotMenu();
   item.isDragging = true;
   dragState = {
     day,
@@ -1816,6 +1818,7 @@ function update() {
 }
 
 function switchTab(tab) {
+  hideSlotMenu();
   document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
   document.querySelectorAll('nav a[id^=tab]').forEach(link => link.classList.remove('active'));
   document.getElementById(`page-${tab}`).classList.add('active');
@@ -1835,6 +1838,7 @@ parseInitialDom();
 bindResetButtons();
 bindAddButtons();
 bindTimelineInsertion();
+bindSlotMenu();
 renderAllTimelines();
 renderProgress();
 syncAddModeUi();
