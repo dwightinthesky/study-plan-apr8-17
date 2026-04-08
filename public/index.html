@@ -1134,7 +1134,7 @@ function persistLayoutAdjustments() {
   Object.keys(layoutAdjustments).forEach(key => delete layoutAdjustments[key]);
   dayModels.forEach(day => {
     day.items.forEach(item => {
-      if (!item.editable || !item.sid) return;
+      if (!item.editable || !item.sid || item.custom) return;
       if (item.start !== item.originalStart || item.end !== item.originalEnd || item.dayId !== item.originalDayId) {
         const nextLayout = {
           start: minsToHHMM(item.start),
@@ -1162,6 +1162,7 @@ function renderActiveNowLine() {
 function attachEditableEvents(el, day, item) {
   const handleStart = event => {
     if (dragState) return;
+    if (addMode) return;
     if (event.button !== 0) return;
     const mode = event.target.closest('.resize-handle')?.dataset.mode || 'drag';
     startEdit(event, day, item, mode);
@@ -1240,6 +1241,7 @@ function onPointerUp() {
   dragState.item.isDragging = false;
   clearDropTargets();
   persistLayoutAdjustments();
+  persistCustomItems();
   renderAllTimelines();
   renderProgress();
   update();
@@ -1264,7 +1266,9 @@ function resetLayout() {
     if (!item.editable || item.dayId === item.originalDayId) return;
     moveItemToDay(item, day, findDay(item.originalDayId));
   });
+  Object.keys(layoutAdjustments).forEach(key => delete layoutAdjustments[key]);
   saveJson(STORAGE_KEYS.layout, {});
+  persistCustomItems();
   renderAllTimelines();
   renderProgress();
   update();
@@ -1273,6 +1277,33 @@ function resetLayout() {
 function bindResetButtons() {
   document.querySelectorAll('.reset-layout-btn').forEach(button => {
     button.addEventListener('click', resetLayout);
+  });
+}
+
+function syncAddModeUi() {
+  document.querySelectorAll('.add-mode-btn').forEach(button => {
+    button.classList.toggle('is-active', button.dataset.addKind === addMode);
+  });
+  dayModels.forEach(day => {
+    day.timelineEl.classList.toggle('add-mode', Boolean(addMode));
+  });
+}
+
+function bindAddButtons() {
+  document.querySelectorAll('.add-mode-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      addMode = addMode === button.dataset.addKind ? null : button.dataset.addKind;
+      syncAddModeUi();
+    });
+  });
+}
+
+function bindTimelineInsertion() {
+  dayModels.forEach(day => {
+    day.timelineEl.addEventListener('click', event => {
+      if (!addMode || dragState) return;
+      addItemAtPointer(day, event.clientY);
+    });
   });
 }
 
