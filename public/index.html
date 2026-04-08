@@ -487,6 +487,7 @@ const checkedSet = new Set(loadJson(STORAGE_KEYS.done, []));
 const layoutAdjustments = loadJson(STORAGE_KEYS.layout, {});
 const dayModels = [];
 let dragState = null;
+let overdueExpanded = false;
 
 function loadJson(key, fallback) {
   try {
@@ -571,6 +572,51 @@ function isItemDone(item) {
   return item.fixedDone || (item.sid ? checkedSet.has(item.sid) : false);
 }
 
+function isTaskDone(task) {
+  return task.fixedDone || checkedSet.has(task.sid);
+}
+
+function findDay(dayId) {
+  return dayModels.find(day => day.dayId === dayId);
+}
+
+function findDayByElement(dayEl) {
+  return dayModels.find(day => day.dayEl === dayEl) || null;
+}
+
+function moveItemToDay(item, fromDay, toDay) {
+  if (!item || !fromDay || !toDay || fromDay === toDay) return;
+  fromDay.items = fromDay.items.filter(entry => entry !== item);
+  toDay.items.push(item);
+  item.dayId = toDay.dayId;
+}
+
+function clearDropTargets() {
+  document.querySelectorAll('.day-col.drop-target').forEach(dayEl => dayEl.classList.remove('drop-target'));
+}
+
+function setDropTarget(day) {
+  clearDropTargets();
+  if (day?.dayEl) day.dayEl.classList.add('drop-target');
+}
+
+function getDropDay(clientX, clientY, gridEl) {
+  const dayEl = document.elementFromPoint(clientX, clientY)?.closest('.day-col');
+  const day = dayEl ? findDayByElement(dayEl) : null;
+  return day && day.gridEl === gridEl ? day : null;
+}
+
+function getTaskCardClass(task) {
+  return `c-${task.key}`;
+}
+
+function isTaskOverdue(task, now = new Date()) {
+  if (isTaskDone(task)) return false;
+  const today = getMMDD(now);
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  return task.mmdd < today || (task.mmdd === today && task.endMins <= nowMins);
+}
+
 function parseItem(slotEl, dayId, order) {
   const start = slotEl.dataset.start ? toMins(slotEl.dataset.start) : 0;
   const end = slotEl.dataset.end ? toMins(slotEl.dataset.end) : start;
@@ -586,6 +632,7 @@ function parseItem(slotEl, dayId, order) {
 
   return {
     dayId,
+    originalDayId: dayId,
     order,
     sid,
     classes,
@@ -615,6 +662,22 @@ function parseItem(slotEl, dayId, order) {
   };
 }
 
+function restorePersistedDayAssignments() {
+  const pendingMoves = [];
+  dayModels.forEach(day => {
+    [...day.items].forEach(item => {
+      if (!item.sid) return;
+      const targetDayId = layoutAdjustments[item.sid]?.dayId;
+      if (!targetDayId || targetDayId === day.dayId) return;
+      const targetDay = findDay(targetDayId);
+      if (!targetDay) return;
+      pendingMoves.push({ item, fromDay: day, toDay: targetDay });
+    });
+  });
+
+  pendingMoves.forEach(({ item, fromDay, toDay }) => moveItemToDay(item, fromDay, toDay));
+}
+
 function parseInitialDom() {
   document.querySelectorAll('.timeline').forEach(timelineEl => {
     const dayEl = timelineEl.closest('.day-col');
@@ -641,6 +704,8 @@ function parseInitialDom() {
       items
     });
   });
+
+  restorePersistedDayAssignments();
 
   const groups = new Map();
   dayModels.forEach(day => {
@@ -776,8 +841,8 @@ function renderAllTimelines() {
   dayModels.forEach(renderDay);
 }
 
-function findDay(dayId) {
-  return dayModels.find(day => day.dayId === dayId);
+function renderEditedDays(...days) {
+  [...new Set(days.filter(Boolean))].forEach(renderDay);
 }
 
 function clampInterval(day, start, duration) {
@@ -856,11 +921,13 @@ function persistLayoutAdjustments() {
   dayModels.forEach(day => {
     day.items.forEach(item => {
       if (!item.editable || !item.sid) return;
-      if (item.start !== item.originalStart || item.end !== item.originalEnd) {
-        layoutAdjustments[item.sid] = {
+      if (item.start !== item.originalStart || item.end !== item.originalEnd || item.dayId !== item.originalDayId) {
+        const nextLayout = {
           start: minsToHHMM(item.start),
           end: minsToHHMM(item.end)
         };
+        if (item.dayId !== item.originalDayId) nextLayout.dayId = item.dayId;
+        layoutAdjustments[item.sid] = nextLayout;
       }
     });
   });
@@ -895,6 +962,7 @@ function startEdit(event, day, item, mode) {
   item.isDragging = true;
   dragState = {
     day,
+    gridEl: day.gridEl,
     item,
     mode,
     startY: event.clientY,
@@ -905,6 +973,7 @@ function startEdit(event, day, item, mode) {
   };
 
   document.body.style.userSelect = 'none';
+  if (mode === 'drag') setDropTarget(day);
   document.addEventListener('pointermove', onPointerMove);
   document.addEventListener('mousemove', onPointerMove);
   document.addEventListener('pointerup', onPointerUp);
@@ -917,10 +986,21 @@ function onPointerMove(event) {
   event.preventDefault();
 
   const deltaMinutes = roundToSnap((event.clientY - dragState.startY) / PX_PER_MIN);
-  if (deltaMinutes === dragState.lastDelta) return;
+  const dropDay = dragState.mode === 'drag'
+    ? (getDropDay(event.clientX, event.clientY, dragState.gridEl) || dragState.day)
+    : dragState.day;
+  const dayChanged = dropDay !== dragState.day;
+  if (deltaMinutes === dragState.lastDelta && !dayChanged) return;
   dragState.lastDelta = deltaMinutes;
 
+  const previousDay = dragState.day;
+  if (dayChanged) {
+    moveItemToDay(dragState.item, dragState.day, dropDay);
+    dragState.day = dropDay;
+  }
+
   const { day, item, mode, originalStart, originalEnd } = dragState;
+  if (mode === 'drag') setDropTarget(day);
 
   if (mode === 'drag') {
     const direction = deltaMinutes === 0 ? dragState.direction : Math.sign(deltaMinutes);
@@ -936,7 +1016,7 @@ function onPointerMove(event) {
     item.end = resolveResizeEnd(day, item, roundToSnap(originalEnd + deltaMinutes));
   }
 
-  renderDay(day);
+  renderEditedDays(previousDay, day);
   renderActiveNowLine();
 }
 
@@ -944,6 +1024,7 @@ function onPointerUp() {
   if (!dragState) return;
 
   dragState.item.isDragging = false;
+  clearDropTargets();
   persistLayoutAdjustments();
   renderAllTimelines();
   renderProgress();
@@ -959,12 +1040,15 @@ function onPointerUp() {
 }
 
 function resetLayout() {
-  dayModels.forEach(day => {
-    day.items.forEach(item => {
-      if (!item.editable) return;
-      item.start = item.originalStart;
-      item.end = item.originalEnd;
-    });
+  const snapshots = dayModels.flatMap(day => day.items.map(item => ({ day, item })));
+  snapshots.forEach(({ item }) => {
+    if (!item.editable) return;
+    item.start = item.originalStart;
+    item.end = item.originalEnd;
+  });
+  snapshots.forEach(({ day, item }) => {
+    if (!item.editable || item.dayId === item.originalDayId) return;
+    moveItemToDay(item, day, findDay(item.originalDayId));
   });
   saveJson(STORAGE_KEYS.layout, {});
   renderAllTimelines();
@@ -992,22 +1076,106 @@ function collectTasks() {
         dayName: day.dayName,
         mmdd: day.dayId,
         startMins: item.start,
+        endMins: item.end,
         fixedDone: item.fixedDone
       }))
   );
 }
 
+function setTaskChecked(task, checked) {
+  if (task.fixedDone) return;
+  if (checked) checkedSet.add(task.sid);
+  else checkedSet.delete(task.sid);
+  persistDoneState();
+  renderAllTimelines();
+  renderProgress();
+  update();
+}
+
+function buildTaskItem(task, options = {}) {
+  const { overdue = false } = options;
+  const isDone = isTaskDone(task);
+  const item = document.createElement('div');
+  item.className = `task-item ${getTaskCardClass(task)}${isDone ? ' is-done' : ''}${overdue ? ' is-overdue' : ''}`;
+  item.dataset.sid = task.sid;
+  const meta = [task.dayName, task.time].filter(Boolean).join(' · ');
+
+  item.innerHTML = `
+    <input type="checkbox" ${isDone ? 'checked' : ''} ${task.fixedDone ? 'disabled' : ''}>
+    <div class="ti-body">
+      ${meta ? `<div class="ti-meta">${escapeHtml(meta)}</div>` : ''}
+      ${task.label ? `<div class="ti-label">${escapeHtml(task.label)}</div>` : ''}
+      <div class="ti-name">${escapeHtml(task.name)}</div>
+      ${task.dur && !isDone ? `<div class="ti-dur">${escapeHtml(task.dur)}</div>` : ''}
+    </div>
+  `;
+
+  const checkbox = item.querySelector('input');
+  checkbox.addEventListener('change', event => {
+    event.stopPropagation();
+    setTaskChecked(task, checkbox.checked);
+  });
+
+  item.addEventListener('click', event => {
+    if (event.target === checkbox || task.fixedDone) return;
+    checkbox.checked = !checkbox.checked;
+    checkbox.dispatchEvent(new Event('change'));
+  });
+
+  return item;
+}
+
+function renderOverduePanel(tasks) {
+  const panel = document.getElementById('overdue-panel');
+  if (!tasks.length) {
+    overdueExpanded = false;
+    panel.classList.remove('is-open');
+    panel.innerHTML = '';
+    return;
+  }
+
+  panel.innerHTML = `
+    <div class="overdue-panel-head">逾時細項</div>
+    <div class="overdue-list"></div>
+  `;
+
+  const list = panel.querySelector('.overdue-list');
+  tasks.forEach(task => list.appendChild(buildTaskItem(task, { overdue: true })));
+  panel.classList.toggle('is-open', overdueExpanded);
+}
+
 function renderProgress() {
   const tasks = collectTasks();
   const total = tasks.length;
-  const doneCount = tasks.filter(task => checkedSet.has(task.sid) || task.fixedDone).length;
+  const doneCount = tasks.filter(isTaskDone).length;
   const pending = total - doneCount;
+  const overdueTasks = tasks
+    .filter(task => isTaskOverdue(task))
+    .sort((a, b) => a.mmdd.localeCompare(b.mmdd) || a.endMins - b.endMins);
 
   document.getElementById('prog-summary').innerHTML = `
     <div class="prog-summary-card"><label>總任務</label><div class="sv">${total}</div><div class="ss">全部讀書項目</div></div>
     <div class="prog-summary-card"><label>已完成</label><div class="sv" style="color:#1a7a10">${doneCount}</div><div class="ss">勾選完成</div></div>
+    <div class="prog-summary-card">
+      <div class="prog-summary-card-head">
+        <label>逾時進度</label>
+        <button class="summary-toggle${overdueExpanded ? ' is-open' : ''}" id="overdue-toggle" type="button" ${overdueTasks.length ? '' : 'disabled'}>v</button>
+      </div>
+      <div class="sv" style="color:var(--accent)">${overdueTasks.length}</div>
+      <div class="ss">${overdueTasks.length ? '時間已過但還沒完成' : '目前沒有逾時項目'}</div>
+    </div>
     <div class="prog-summary-card"><label>未完成</label><div class="sv" style="color:var(--accent)">${pending}</div><div class="ss">待讀項目</div></div>
   `;
+
+  renderOverduePanel(overdueTasks);
+  const overdueToggle = document.getElementById('overdue-toggle');
+  if (overdueToggle) {
+    overdueToggle.addEventListener('click', () => {
+      if (!overdueTasks.length) return;
+      overdueExpanded = !overdueExpanded;
+      renderProgress();
+    });
+  }
 
   const colsEl = document.getElementById('prog-cols');
   colsEl.innerHTML = '';
@@ -1016,14 +1184,14 @@ function renderProgress() {
     const subjectTasks = tasks
       .filter(task => task.key === subject.key)
       .sort((a, b) => {
-        const aDone = checkedSet.has(a.sid) || a.fixedDone;
-        const bDone = checkedSet.has(b.sid) || b.fixedDone;
+        const aDone = isTaskDone(a);
+        const bDone = isTaskDone(b);
         if (aDone !== bDone) return Number(aDone) - Number(bDone);
         if (a.mmdd !== b.mmdd) return a.mmdd.localeCompare(b.mmdd);
         return a.startMins - b.startMins;
       });
 
-    const completed = subjectTasks.filter(task => checkedSet.has(task.sid) || task.fixedDone).length;
+    const completed = subjectTasks.filter(isTaskDone).length;
     const pct = subjectTasks.length ? Math.round((completed / subjectTasks.length) * 100) : 0;
     const col = document.createElement('div');
     col.className = `prog-col ${subject.cls}`;
@@ -1037,41 +1205,7 @@ function renderProgress() {
     `;
 
     subjectTasks.forEach(task => {
-      const isDone = checkedSet.has(task.sid) || task.fixedDone;
-      const item = document.createElement('div');
-      item.className = `task-item${isDone ? ' is-done' : ''}`;
-      item.dataset.sid = task.sid;
-      const meta = [task.dayName, task.time].filter(Boolean).join(' · ');
-
-      item.innerHTML = `
-        <input type="checkbox" ${isDone ? 'checked' : ''} ${task.fixedDone ? 'disabled' : ''}>
-        <div class="ti-body">
-          ${meta ? `<div class="ti-meta">${escapeHtml(meta)}</div>` : ''}
-          ${task.label ? `<div class="ti-label">${escapeHtml(task.label)}</div>` : ''}
-          <div class="ti-name">${escapeHtml(task.name)}</div>
-          ${task.dur && !isDone ? `<div class="ti-dur">${escapeHtml(task.dur)}</div>` : ''}
-        </div>
-      `;
-
-      const checkbox = item.querySelector('input');
-      checkbox.addEventListener('change', event => {
-        event.stopPropagation();
-        if (task.fixedDone) return;
-        if (checkbox.checked) checkedSet.add(task.sid);
-        else checkedSet.delete(task.sid);
-        persistDoneState();
-        renderAllTimelines();
-        renderProgress();
-        update();
-      });
-
-      item.addEventListener('click', event => {
-        if (event.target === checkbox || task.fixedDone) return;
-        checkbox.checked = !checkbox.checked;
-        checkbox.dispatchEvent(new Event('change'));
-      });
-
-      col.appendChild(item);
+      col.appendChild(buildTaskItem(task));
     });
 
     colsEl.appendChild(col);
@@ -1207,6 +1341,7 @@ function update() {
   updateStatus(prepDates, 'prep', 'clock-prep');
   updateStatus(examDates, 'exam', 'clock-exam');
   const active = document.querySelector('.page.active')?.id;
+  if (active === 'page-progress') renderProgress();
   if (active === 'page-prep') drawNowLine(prepDates);
   else if (active === 'page-exam') drawNowLine(examDates);
   else document.querySelectorAll('.now-line,.now-label').forEach(el => el.remove());
