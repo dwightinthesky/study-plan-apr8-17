@@ -637,6 +637,82 @@ function parseRestLabel(text) {
   return withoutDuration || withoutTime || source;
 }
 
+function parseColorParts(color) {
+  if (!color) return null;
+  const value = String(color).trim();
+  if (value.startsWith('#')) {
+    let hex = value.slice(1);
+    if (hex.length === 3) hex = hex.split('').map(char => char + char).join('');
+    if (hex.length !== 6) return null;
+    const num = Number.parseInt(hex, 16);
+    return {
+      r: (num >> 16) & 255,
+      g: (num >> 8) & 255,
+      b: num & 255
+    };
+  }
+  const rgb = value.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+  if (!rgb) return null;
+  return {
+    r: Number(rgb[1]),
+    g: Number(rgb[2]),
+    b: Number(rgb[3])
+  };
+}
+
+function rgbToHex(color) {
+  const parts = parseColorParts(color);
+  if (!parts) return '#c0392b';
+  return `#${[parts.r, parts.g, parts.b].map(part => part.toString(16).padStart(2, '0')).join('')}`;
+}
+
+function getReadableTextColor(color) {
+  const parts = parseColorParts(color);
+  if (!parts) return '#1a1916';
+  const luminance = (0.299 * parts.r) + (0.587 * parts.g) + (0.114 * parts.b);
+  return luminance > 170 ? '#1a1916' : '#fffdf8';
+}
+
+function persistItemMeta() {
+  saveJson(STORAGE_KEYS.meta, itemMeta);
+}
+
+function updateBuiltInMeta(item, patch) {
+  if (!item?.sid || item.custom) return;
+  itemMeta[item.sid] = { ...(itemMeta[item.sid] || {}), ...patch };
+  persistItemMeta();
+}
+
+function saveItemState(item) {
+  if (!item) return;
+  if (item.custom) {
+    persistCustomItems();
+    return;
+  }
+  updateBuiltInMeta(item, {
+    hidden: Boolean(item.hidden),
+    label: item.label,
+    name: item.name,
+    text: item.text,
+    color: item.customColor || null
+  });
+}
+
+function removeItem(day, item) {
+  if (!day || !item) return;
+  if (item.sid && checkedSet.delete(item.sid)) persistDoneState();
+  if (item.custom) {
+    day.items = day.items.filter(entry => entry !== item);
+    persistCustomItems();
+  } else {
+    item.hidden = true;
+    saveItemState(item);
+  }
+  renderAllTimelines();
+  renderProgress();
+  update();
+}
+
 function detectSubjectKey(classes, label, name) {
   if (classes.some(cls => cls.startsWith('law'))) return 'law';
   if (classes.includes('acct')) return 'acct';
