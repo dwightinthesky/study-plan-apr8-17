@@ -1896,7 +1896,10 @@ function drawNowLine(dates) {
   const timelineEl = day.timelineEl;
   const slots = day.items
     .filter(item => isTimelineItemVisible(item) && item.renderEl && item.end > item.start && item.type !== 'marker')
-    .map(item => ({ el: item.renderEl, start: item.start, end: item.end }))
+    .map(item => {
+      const metrics = getItemActualMetrics(day, item);
+      return { el: item.renderEl, start: item.start, end: item.end, top: metrics.top, bottom: metrics.bottom, actualHeight: metrics.height };
+    })
     .sort((a, b) => a.start - b.start);
 
   if (!slots.length) return;
@@ -1910,14 +1913,14 @@ function drawNowLine(dates) {
 
   if (current) {
     const ratio = (nowMins - current.start) / Math.max(1, current.end - current.start);
-    topPx = current.el.offsetTop + ratio * current.el.offsetHeight;
+    topPx = current.top + ratio * current.actualHeight;
   } else {
     for (let i = 0; i < slots.length - 1; i += 1) {
       const prev = slots[i];
       const next = slots[i + 1];
       if (nowMins > prev.end && nowMins < next.start) {
         const ratio = (nowMins - prev.end) / (next.start - prev.end);
-        topPx = (prev.el.offsetTop + prev.el.offsetHeight) + ratio * (next.el.offsetTop - (prev.el.offsetTop + prev.el.offsetHeight));
+        topPx = prev.bottom + ratio * (next.top - prev.bottom);
         break;
       }
     }
