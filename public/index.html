@@ -1197,6 +1197,13 @@ function getPointerMinutes(day, clientY, offsetPx = 0) {
   return roundToSnap(rawMinutes);
 }
 
+function getItemActualMetrics(day, item) {
+  const renderStart = day.renderStart ?? day.baseStart;
+  const top = TIMELINE_PADDING + (item.start - renderStart) * PX_PER_MIN;
+  const height = Math.max(0, (item.end - item.start) * PX_PER_MIN);
+  return { top, height, bottom: top + height };
+}
+
 function createPresetItem(day, kind, clientY) {
   const preset = ADD_ITEM_PRESETS[kind];
   if (!preset) return null;
