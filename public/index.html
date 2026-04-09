@@ -534,7 +534,8 @@ const STORAGE_KEYS = {
   done: 'study-plan-done-v2',
   custom: 'study-plan-custom-items-v1',
   meta: 'study-plan-item-meta-v1',
-  hideDone: 'study-plan-hide-done-v1'
+  hideDone: 'study-plan-hide-done-v1',
+  subjectFilters: 'study-plan-subject-filters-v1'
 };
 const SNAP_MINUTES = 5;
 const MIN_DURATION = 15;
@@ -554,6 +555,10 @@ const SUBJECTS = [
   { key: 'sust', label: 'Sust', cls: 'c-sust', barColor: '#0a4a44' },
   { key: 'cs', label: 'CS', cls: 'c-cs', barColor: '#6a3010' }
 ];
+const PAGE_FILTER_SUBJECTS = {
+  prep: ['law', 'acct', 'stat', 'psych', 'sust'],
+  exam: ['law', 'acct', 'stat', 'psych', 'sust', 'cs']
+};
 const ADD_ITEM_PRESETS = {
   review: {
     type: 'task',
@@ -597,6 +602,11 @@ let customSequence = 0;
 let slotMenuState = null;
 let colorTarget = null;
 let hideDoneOnTimeline = Boolean(loadJson(STORAGE_KEYS.hideDone, false));
+const savedSubjectFilters = loadJson(STORAGE_KEYS.subjectFilters, {});
+const subjectFilters = {
+  prep: new Set((savedSubjectFilters.prep || []).filter(key => PAGE_FILTER_SUBJECTS.prep.includes(key))),
+  exam: new Set((savedSubjectFilters.exam || []).filter(key => PAGE_FILTER_SUBJECTS.exam.includes(key)))
+};
 
 function loadJson(key, fallback) {
   try {
