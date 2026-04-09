@@ -269,8 +269,8 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
   <div class="days-grid cols-5">
     <!-- 4/8 -->
     <div class="day-col">
-      <div class="day-head today-head">
-        <div class="dname">4/8 Wed 今天</div><div class="dhours">12:00–23:30</div>
+      <div class="day-head">
+        <div class="dname">4/8 Wed</div><div class="dhours">12:00–23:30</div>
       </div>
       <div class="timeline" id="tl-0408">
         <div class="slot rest" data-start="12:00" data-end="13:00">12:00–13:00　午休</div>
@@ -1016,6 +1016,20 @@ function updateDayHours(day) {
   const start = Math.min(...timed.map(item => item.start));
   const end = Math.max(...timed.map(item => item.end));
   day.hoursEl.textContent = `${minsToHHMM(start)}–${minsToHHMM(end)}`;
+}
+
+function syncTodayMarker() {
+  const todayId = getMMDD(new Date());
+  dayModels.forEach(day => {
+    const head = day.dayEl.querySelector('.day-head');
+    const nameEl = day.dayEl.querySelector('.dname');
+    if (!head || !nameEl) return;
+    const baseName = nameEl.dataset.baseName || nameEl.textContent.replace(/\s*今天$/, '').trim();
+    nameEl.dataset.baseName = baseName;
+    const isToday = day.dayId === todayId;
+    head.classList.toggle('today-head', isToday);
+    nameEl.textContent = isToday ? `${baseName} 今天` : baseName;
+  });
 }
 
 function renderGuides(day) {
@@ -1808,6 +1822,7 @@ function drawNowLine(dates) {
 }
 
 function update() {
+  syncTodayMarker();
   updateStatus(prepDates, 'prep', 'clock-prep');
   updateStatus(examDates, 'exam', 'clock-exam');
   const active = document.querySelector('.page.active')?.id;
