@@ -1309,7 +1309,13 @@ function getItemActualMetrics(day, item) {
 }
 
 function shouldRenderCompact(item, height) {
-  return item.type !== 'marker' && height < 28;
+  return item.type !== 'marker' && item.type !== 'rest' && height < 28;
+}
+
+function getRestRenderMode(height) {
+  if (height < 14) return 'micro';
+  if (height < 28) return 'mini';
+  return 'normal';
 }
 
 function createPresetItem(day, kind, clientY) {
