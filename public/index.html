@@ -1137,7 +1137,6 @@ function renderItem(day, item, nextItem = null) {
   if (isCompact) {
     el.innerHTML = `
       <div class="slot-content">
-        ${timeText ? `<span class="s-compact-time">${escapeHtml(timeText)}</span>` : ''}
         <span class="s-compact-title">${escapeHtml(primaryText || item.text || '')}</span>
         ${durationText && !item.fixedDone ? `<span class="s-compact-dur">${escapeHtml(durationText)}</span>` : ''}
       </div>
