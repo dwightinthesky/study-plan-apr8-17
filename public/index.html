@@ -1711,6 +1711,49 @@ function bindHideDoneButtons() {
   });
 }
 
+function syncSubjectFilterUi() {
+  document.querySelectorAll('.subject-filter-btn').forEach(button => {
+    const pageKey = button.dataset.filterPage;
+    const subjectKey = button.dataset.subjectKey;
+    const active = !isSubjectFilterActive(pageKey) || subjectFilters[pageKey].has(subjectKey);
+    button.classList.toggle('is-active', active);
+    button.classList.toggle('is-dim', !active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+}
+
+function toggleSubjectFilter(pageKey, subjectKey) {
+  const filterSet = subjectFilters[pageKey];
+  const availableKeys = getPageFilterKeys(pageKey);
+  if (!filterSet || !availableKeys.includes(subjectKey)) return;
+
+  if (!isSubjectFilterActive(pageKey)) {
+    filterSet.clear();
+    filterSet.add(subjectKey);
+  } else if (filterSet.has(subjectKey)) {
+    filterSet.delete(subjectKey);
+  } else {
+    filterSet.add(subjectKey);
+  }
+
+  if (filterSet.size === 0 || filterSet.size === availableKeys.length) {
+    filterSet.clear();
+  }
+
+  persistSubjectFilters();
+  syncSubjectFilterUi();
+  renderAllTimelines();
+  update();
+}
+
+function bindSubjectFilterButtons() {
+  document.querySelectorAll('.subject-filter-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      toggleSubjectFilter(button.dataset.filterPage, button.dataset.subjectKey);
+    });
+  });
+}
+
 function syncAddModeUi() {
   document.querySelectorAll('.add-mode-btn').forEach(button => {
     button.classList.toggle('is-active', button.dataset.addKind === addMode);
@@ -1891,11 +1934,12 @@ function renderProgress() {
 }
 
 function buildSchedule(dates) {
+  const pageKey = getPageKeyForDay(dates[0]);
   return dayModels
     .filter(day => dates.includes(day.dayId))
     .flatMap(day =>
       day.items
-        .filter(item => !item.hidden && item.type === 'task' && !isItemDone(item))
+        .filter(item => !item.hidden && item.type === 'task' && !isItemDone(item) && (!isSubjectFilterActive(pageKey) || subjectFilters[pageKey].has(item.subjectKey)))
         .map(item => [
           day.dayId,
           minsToHHMM(item.start),
