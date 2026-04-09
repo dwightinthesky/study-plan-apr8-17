@@ -1191,10 +1191,13 @@ function renderItem(day, item, nextItem = null) {
     ? MARKER_HEIGHT
     : Math.max(actualHeight, Math.min(baseHeight, maxVisualHeight));
   const isCompact = shouldRenderCompact(item, height);
+  const restRenderMode = item.type === 'rest' ? getRestRenderMode(height) : 'normal';
 
   el.style.top = `${top}px`;
   el.style.height = `${height}px`;
   if (isCompact) el.classList.add('is-compact');
+  if (restRenderMode === 'mini') el.classList.add('is-mini-rest');
+  if (restRenderMode === 'micro') el.classList.add('is-micro-rest');
   item.actualTop = top;
   item.actualHeight = actualHeight;
   item.visualHeight = height;
@@ -1204,7 +1207,15 @@ function renderItem(day, item, nextItem = null) {
   const primaryText = getPrimaryDisplayText(item);
   const secondaryText = getSecondaryDisplayText(item);
 
-  if (isCompact) {
+  if (restRenderMode === 'micro') {
+    el.innerHTML = `
+      <div class="slot-content">
+        ${timeText ? `<span class="s-compact-time">${escapeHtml(timeText)}</span>` : ''}
+        <span class="s-compact-title">${escapeHtml(item.text)}</span>
+        ${durationText ? `<span class="s-compact-dur">${escapeHtml(durationText)}</span>` : ''}
+      </div>
+    `;
+  } else if (isCompact) {
     el.innerHTML = `
       <div class="slot-content">
         <span class="s-compact-title">${escapeHtml(primaryText || item.text || '')}</span>
