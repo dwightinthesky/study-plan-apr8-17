@@ -1120,9 +1120,11 @@ function renderItem(day, item, nextItem = null) {
   const height = item.type === 'marker'
     ? MARKER_HEIGHT
     : Math.max(actualHeight, Math.min(baseHeight, maxVisualHeight));
+  const isCompact = shouldRenderCompact(item, height);
 
   el.style.top = `${top}px`;
   el.style.height = `${height}px`;
+  if (isCompact) el.classList.add('is-compact');
   item.actualTop = top;
   item.actualHeight = actualHeight;
   item.visualHeight = height;
@@ -1132,7 +1134,15 @@ function renderItem(day, item, nextItem = null) {
   const primaryText = getPrimaryDisplayText(item);
   const secondaryText = getSecondaryDisplayText(item);
 
-  if (item.type === 'rest') {
+  if (isCompact) {
+    el.innerHTML = `
+      <div class="slot-content">
+        ${timeText ? `<span class="s-compact-time">${escapeHtml(timeText)}</span>` : ''}
+        <span class="s-compact-title">${escapeHtml(primaryText || item.text || '')}</span>
+        ${durationText && !item.fixedDone ? `<span class="s-compact-dur">${escapeHtml(durationText)}</span>` : ''}
+      </div>
+    `;
+  } else if (item.type === 'rest') {
     el.innerHTML = `
       <div class="slot-content">
         <div class="s-meta-line">${escapeHtml(timeText)}</div>
@@ -1227,6 +1237,10 @@ function getItemActualMetrics(day, item) {
   const top = TIMELINE_PADDING + (item.start - renderStart) * PX_PER_MIN;
   const height = Math.max(0, (item.end - item.start) * PX_PER_MIN);
   return { top, height, bottom: top + height };
+}
+
+function shouldRenderCompact(item, height) {
+  return item.type !== 'marker' && height < 28;
 }
 
 function createPresetItem(day, kind, clientY) {
