@@ -246,13 +246,13 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
 <!-- ══════ 準備週 ══════ -->
 <div class="page active" id="page-prep">
   <div class="page-header"><span class="subtitle">Apr 8 – 12　準備週</span></div>
-  <div class="priority-row">
+  <div class="priority-row" data-filter-page="prep">
     <span>Priority</span>
-    <span class="pb law">Law</span><span class="arr">›</span>
-    <span class="pb acct">Acct</span><span class="arr">›</span>
-    <span class="pb stat">Stats</span><span class="arr">›</span>
-    <span class="pb psych">Psych</span><span class="arr">›</span>
-    <span class="pb sust">Sust</span>
+    <button class="pb law subject-filter-btn" type="button" data-filter-page="prep" data-subject-key="law">Law</button><span class="arr">›</span>
+    <button class="pb acct subject-filter-btn" type="button" data-filter-page="prep" data-subject-key="acct">Acct</button><span class="arr">›</span>
+    <button class="pb stat subject-filter-btn" type="button" data-filter-page="prep" data-subject-key="stat">Stats</button><span class="arr">›</span>
+    <button class="pb psych subject-filter-btn" type="button" data-filter-page="prep" data-subject-key="psych">Psych</button><span class="arr">›</span>
+    <button class="pb sust subject-filter-btn" type="button" data-filter-page="prep" data-subject-key="sust">Sust</button>
   </div>
   <div class="clock-row" id="clock-prep">--:--</div>
   <div class="edit-tools">
@@ -398,6 +398,15 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
 <div class="page" id="page-exam">
   <div class="page-header"><span class="subtitle">Apr 13 – 17　考試週</span></div>
   <div class="priority-row"><span>邏輯：考前讀那科 → 考試 → 空檔讀下一科</span></div>
+  <div class="priority-row" data-filter-page="exam">
+    <span>Filter</span>
+    <button class="pb law subject-filter-btn" type="button" data-filter-page="exam" data-subject-key="law">Law</button><span class="arr">›</span>
+    <button class="pb acct subject-filter-btn" type="button" data-filter-page="exam" data-subject-key="acct">Acct</button><span class="arr">›</span>
+    <button class="pb stat subject-filter-btn" type="button" data-filter-page="exam" data-subject-key="stat">Stats</button><span class="arr">›</span>
+    <button class="pb psych subject-filter-btn" type="button" data-filter-page="exam" data-subject-key="psych">Psych</button><span class="arr">›</span>
+    <button class="pb sust subject-filter-btn" type="button" data-filter-page="exam" data-subject-key="sust">Sust</button><span class="arr">›</span>
+    <button class="pb cs subject-filter-btn" type="button" data-filter-page="exam" data-subject-key="cs">CS</button>
+  </div>
   <div class="clock-row" id="clock-exam">--:--</div>
   <div class="edit-tools">
     <span>拖曳色塊可移動時間，也可以橫向拖到別天；拖曳上下邊緣可調整時長。按新增按鈕後，在想加入的當天滑鼠位置點一下就會新增。</span>
