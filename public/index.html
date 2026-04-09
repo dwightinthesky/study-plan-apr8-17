@@ -1277,7 +1277,7 @@ function clampInterval(day, start, duration) {
 }
 
 function getBlockingItems(day, activeItem) {
-  return day.items.filter(item => item !== activeItem && isTimelineItemVisible(item) && item.type !== 'marker');
+  return day.items.filter(item => item !== activeItem && !item.hidden && !(hideDoneOnTimeline && isItemDone(item)) && item.type !== 'marker');
 }
 
 function getPointerMinutes(day, clientY, offsetPx = 0) {
