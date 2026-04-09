@@ -69,6 +69,14 @@ nav .nav-title-small{font-size:.9em;margin-left:.28em;}
 .slot .s-main-line{display:flex;flex-wrap:wrap;gap:4px;align-items:baseline;line-height:1.2;}
 .slot .s-main-text{font-size:9.6px;font-weight:500;min-width:0;}
 .slot .s-inline-dur{font-size:8.2px;opacity:.62;font-weight:400;}
+.slot.is-compact{padding:0 6px;}
+.slot.is-compact .slot-content{display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;overflow:hidden;text-align:center;}
+.slot.is-compact .s-compact-time,
+.slot.is-compact .s-compact-title,
+.slot.is-compact .s-compact-dur{font-size:8px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.slot.is-compact .s-compact-time{opacity:.72;flex-shrink:0;}
+.slot.is-compact .s-compact-title{font-weight:500;min-width:0;}
+.slot.is-compact .s-compact-dur{opacity:.64;flex-shrink:0;}
 .slot.law1{background:var(--law-1);color:var(--law-1t);}
 .slot.law2{background:var(--law-2);color:var(--law-2t);}
 .slot.law3{background:var(--law-3);color:var(--law-3t);}
@@ -115,7 +123,9 @@ nav .nav-title-small{font-size:.9em;margin-left:.28em;}
 .resize-handle{position:absolute;left:8px;right:8px;height:10px;z-index:6;}
 .resize-handle.top{top:-4px;cursor:ns-resize;}
 .resize-handle.bottom{bottom:-4px;cursor:ns-resize;}
-.resize-handle::after{content:'';display:block;width:28px;height:4px;margin:3px auto;border-radius:999px;background:currentColor;opacity:.22;}
+.resize-handle::after{content:'';display:block;width:28px;height:4px;margin:3px auto;border-radius:999px;background:currentColor;opacity:0;transition:opacity .15s;}
+.timeline.enhanced .slot[data-editable="true"]:hover .resize-handle::after,
+.timeline.enhanced .slot[data-editable="true"].dragging .resize-handle::after{opacity:.22;}
 .time-guide{position:absolute;left:0;right:0;height:1px;background:rgba(26,25,22,.08);z-index:0;pointer-events:none;}
 .time-guide-label{position:absolute;left:8px;top:-7px;font-size:8px;color:var(--muted);background:var(--bg);padding:0 4px;z-index:0;pointer-events:none;}
 .slot-menu{position:fixed;z-index:50;display:none;min-width:160px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 10px 24px rgba(26,25,22,.12);padding:.35rem;}
