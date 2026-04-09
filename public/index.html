@@ -123,6 +123,7 @@ nav .nav-title-small{font-size:.9em;margin-left:.28em;}
 .slot-menu button{display:block;width:100%;border:none;background:transparent;color:var(--text);text-align:left;padding:.55rem .7rem;border-radius:6px;font:inherit;cursor:pointer;transition:background .15s,color .15s;}
 .slot-menu button:hover{background:var(--bg);}
 .slot-menu button.danger{color:var(--accent);}
+.slot-menu button.danger.is-confirm{background:#fbe9e6;}
 .slot-menu button.danger:hover{background:#fbe9e6;}
 .slot-color-input{position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none;}
 
@@ -1297,14 +1298,23 @@ function getSlotMenuEl() {
   return document.getElementById('slot-menu');
 }
 
+function resetSlotMenuDeleteState() {
+  const deleteButton = getSlotMenuEl().querySelector('[data-slot-action="delete"]');
+  if (!deleteButton) return;
+  deleteButton.classList.remove('is-confirm');
+  deleteButton.textContent = '刪除';
+}
+
 function hideSlotMenu() {
+  resetSlotMenuDeleteState();
   getSlotMenuEl().classList.remove('is-open');
   slotMenuState = null;
 }
 
 function showSlotMenu(day, item, clientX, clientY) {
   const menu = getSlotMenuEl();
-  slotMenuState = { day, item };
+  slotMenuState = { day, item, confirmDelete: false };
+  resetSlotMenuDeleteState();
   menu.classList.add('is-open');
   menu.style.left = '0px';
   menu.style.top = '0px';
@@ -1345,11 +1355,21 @@ function pickSlotColor(item) {
 function handleSlotMenuAction(action) {
   if (!slotMenuState) return;
   const { day, item } = slotMenuState;
-  hideSlotMenu();
   if (action === 'delete') {
-    if (window.confirm('要刪除這個 session 嗎？')) removeItem(day, item);
+    const deleteButton = getSlotMenuEl().querySelector('[data-slot-action="delete"]');
+    if (!slotMenuState.confirmDelete) {
+      slotMenuState.confirmDelete = true;
+      if (deleteButton) {
+        deleteButton.classList.add('is-confirm');
+        deleteButton.textContent = '再按一次刪除';
+      }
+      return;
+    }
+    hideSlotMenu();
+    removeItem(day, item);
     return;
   }
+  hideSlotMenu();
   if (action === 'edit') {
     editSlotContent(item);
     return;
