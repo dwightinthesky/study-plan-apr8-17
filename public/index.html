@@ -775,8 +775,39 @@ function isItemDone(item) {
   return item.fixedDone || (item.sid ? checkedSet.has(item.sid) : false);
 }
 
+function getPageKeyForDay(dayOrDayId) {
+  const dayId = typeof dayOrDayId === 'string' ? dayOrDayId : dayOrDayId?.dayId;
+  if (prepDates.includes(dayId)) return 'prep';
+  if (examDates.includes(dayId)) return 'exam';
+  return 'prep';
+}
+
+function getPageFilterKeys(pageKey) {
+  return PAGE_FILTER_SUBJECTS[pageKey] || [];
+}
+
+function isSubjectFilterActive(pageKey) {
+  const filterSet = subjectFilters[pageKey];
+  const availableKeys = getPageFilterKeys(pageKey);
+  return filterSet.size > 0 && filterSet.size < availableKeys.length;
+}
+
+function persistSubjectFilters() {
+  saveJson(STORAGE_KEYS.subjectFilters, {
+    prep: [...subjectFilters.prep],
+    exam: [...subjectFilters.exam]
+  });
+}
+
+function isItemVisibleForSubjectFilter(item) {
+  const pageKey = getPageKeyForDay(item);
+  if (!isSubjectFilterActive(pageKey)) return true;
+  if (!item.subjectKey) return false;
+  return subjectFilters[pageKey].has(item.subjectKey);
+}
+
 function isTimelineItemVisible(item) {
-  return !item.hidden && !(hideDoneOnTimeline && isItemDone(item));
+  return !item.hidden && !(hideDoneOnTimeline && isItemDone(item)) && isItemVisibleForSubjectFilter(item);
 }
 
 function isTaskDone(task) {
