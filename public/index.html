@@ -2092,6 +2092,7 @@ function switchTab(tab) {
 
 parseInitialDom();
 bindHideDoneButtons();
+bindSubjectFilterButtons();
 bindAddButtons();
 bindTimelineInsertion();
 bindSlotMenu();
@@ -2099,6 +2100,7 @@ renderAllTimelines();
 renderProgress();
 syncAddModeUi();
 syncHideDoneUi();
+syncSubjectFilterUi();
 
 const todayMMDD = getMMDD(new Date());
 if (examDates.includes(todayMMDD)) switchTab('exam');
