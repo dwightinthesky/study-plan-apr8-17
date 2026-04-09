@@ -98,6 +98,20 @@ button.pb[aria-pressed="true"]{box-shadow:inset 0 0 0 1px rgba(26,25,22,.18);}
 .slot.rest{background:var(--bg);color:var(--muted);font-size:9px;text-align:center;padding:0 8px;border:1px solid var(--border);}
 .slot.rest .slot-content{align-items:center;text-align:center;}
 .slot.rest .s-main-line{justify-content:center;}
+.slot.rest.is-mini-rest{padding:1px 6px;overflow:hidden;}
+.slot.rest.is-mini-rest .slot-content{gap:1px;height:100%;min-height:100%;justify-content:center;}
+.slot.rest.is-mini-rest .s-meta-line{font-size:6.6px;line-height:1;}
+.slot.rest.is-mini-rest .s-main-line{gap:3px;line-height:1;}
+.slot.rest.is-mini-rest .s-main-text{font-size:7.2px;line-height:1;}
+.slot.rest.is-mini-rest .s-inline-dur{font-size:6.4px;line-height:1;}
+.slot.rest.is-micro-rest{padding:0 5px;overflow:hidden;}
+.slot.rest.is-micro-rest .slot-content{display:flex;flex-direction:row;align-items:center;justify-content:center;gap:3px;white-space:nowrap;overflow:hidden;height:100%;min-height:100%;line-height:1;}
+.slot.rest.is-micro-rest .s-compact-time,
+.slot.rest.is-micro-rest .s-compact-title,
+.slot.rest.is-micro-rest .s-compact-dur{font-size:6.5px;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.slot.rest.is-micro-rest .s-compact-time{opacity:.72;flex-shrink:0;}
+.slot.rest.is-micro-rest .s-compact-title{font-weight:500;min-width:0;}
+.slot.rest.is-micro-rest .s-compact-dur{opacity:.64;flex-shrink:0;}
 .slot.exam-slot{background:var(--exam);color:var(--examt);font-weight:500;border-left:3px solid var(--accent);}
 
 /* NOW LINE */
