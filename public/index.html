@@ -1190,10 +1190,10 @@ function getBlockingItems(day, activeItem) {
   return day.items.filter(item => item !== activeItem && isTimelineItemVisible(item) && item.type !== 'marker');
 }
 
-function getPointerMinutes(day, clientY) {
+function getPointerMinutes(day, clientY, offsetPx = 0) {
   const rect = day.timelineEl.getBoundingClientRect();
   const renderStart = day.renderStart ?? day.baseStart;
-  const rawMinutes = renderStart + ((clientY - rect.top - TIMELINE_PADDING) / PX_PER_MIN);
+  const rawMinutes = renderStart + ((clientY - rect.top - TIMELINE_PADDING - offsetPx) / PX_PER_MIN);
   return roundToSnap(rawMinutes);
 }
 
@@ -1469,6 +1469,10 @@ function startEdit(event, day, item, mode) {
   event.preventDefault();
   hideSlotMenu();
   item.isDragging = true;
+  const itemRect = item.renderEl?.getBoundingClientRect?.();
+  const pointerOffsetPx = mode === 'drag' && itemRect
+    ? Math.max(0, Math.min(event.clientY - itemRect.top, itemRect.height))
+    : 0;
   dragState = {
     day,
     gridEl: day.gridEl,
@@ -1477,6 +1481,10 @@ function startEdit(event, day, item, mode) {
     startY: event.clientY,
     originalStart: item.start,
     originalEnd: item.end,
+    pointerOffsetPx,
+    lastClientY: event.clientY,
+    lastClientX: event.clientX,
+    lastPointerStart: item.start,
     lastDelta: null,
     direction: 1
   };
@@ -1494,33 +1502,44 @@ function onPointerMove(event) {
   if (!dragState) return;
   event.preventDefault();
 
-  const deltaMinutes = roundToSnap((event.clientY - dragState.startY) / PX_PER_MIN);
-  const dropDay = dragState.mode === 'drag'
+  const previousDay = dragState.day;
+  const { mode } = dragState;
+  const dropDay = mode === 'drag'
     ? (getDropDay(event.clientX, event.clientY, dragState.gridEl) || dragState.day)
     : dragState.day;
   const dayChanged = dropDay !== dragState.day;
-  if (deltaMinutes === dragState.lastDelta && !dayChanged) return;
-  dragState.lastDelta = deltaMinutes;
-
-  const previousDay = dragState.day;
   if (dayChanged) {
     moveItemToDay(dragState.item, dragState.day, dropDay);
     dragState.day = dropDay;
   }
 
-  const { day, item, mode, originalStart, originalEnd } = dragState;
-  if (mode === 'drag') setDropTarget(day);
-
+  const { day, item, originalStart, originalEnd } = dragState;
   if (mode === 'drag') {
-    const direction = deltaMinutes === 0 ? dragState.direction : Math.sign(deltaMinutes);
-    dragState.direction = direction || 1;
-    const next = resolveMove(day, item, originalStart + deltaMinutes, dragState.direction);
+    setDropTarget(day);
+    const desiredStart = getPointerMinutes(day, event.clientY, dragState.pointerOffsetPx);
+    if (desiredStart === dragState.lastPointerStart && !dayChanged && event.clientY === dragState.lastClientY && event.clientX === dragState.lastClientX) return;
+
+    const direction = event.clientY === dragState.lastClientY
+      ? dragState.direction
+      : Math.sign(event.clientY - dragState.lastClientY);
+    dragState.direction = direction || dragState.direction || 1;
+    dragState.lastPointerStart = desiredStart;
+    dragState.lastClientY = event.clientY;
+    dragState.lastClientX = event.clientX;
+
+    const next = resolveMove(day, item, desiredStart, dragState.direction);
     item.start = next.start;
     item.end = next.end;
   } else if (mode === 'resize-start') {
+    const deltaMinutes = roundToSnap((event.clientY - dragState.startY) / PX_PER_MIN);
+    if (deltaMinutes === dragState.lastDelta) return;
+    dragState.lastDelta = deltaMinutes;
     item.start = resolveResizeStart(day, item, roundToSnap(originalStart + deltaMinutes));
     item.end = originalEnd;
   } else if (mode === 'resize-end') {
+    const deltaMinutes = roundToSnap((event.clientY - dragState.startY) / PX_PER_MIN);
+    if (deltaMinutes === dragState.lastDelta) return;
+    dragState.lastDelta = deltaMinutes;
     item.start = originalStart;
     item.end = resolveResizeEnd(day, item, roundToSnap(originalEnd + deltaMinutes));
   }
