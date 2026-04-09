@@ -513,6 +513,7 @@ const STORAGE_KEYS = {
 };
 const SNAP_MINUTES = 5;
 const MIN_DURATION = 15;
+const REST_MIN_DURATION = 10;
 const PX_PER_MIN = 1.035;
 const SLOT_MIN_HEIGHT = 42;
 const REST_MIN_HEIGHT = 48;
@@ -786,6 +787,10 @@ function isTaskOverdue(task, now = new Date()) {
   const today = getMMDD(now);
   const nowMins = now.getHours() * 60 + now.getMinutes();
   return task.mmdd < today || (task.mmdd === today && task.endMins <= nowMins);
+}
+
+function getMinimumDuration(item) {
+  return item?.type === 'rest' ? REST_MIN_DURATION : MIN_DURATION;
 }
 
 function shouldUseLabelTitle(subjectKey, label) {
@@ -1089,7 +1094,7 @@ function renderItem(day, item) {
 
   const renderStart = day.renderStart ?? day.baseStart;
   const top = TIMELINE_PADDING + (item.start - renderStart) * PX_PER_MIN;
-  const duration = Math.max(item.end - item.start, item.type === 'marker' ? 0 : MIN_DURATION);
+  const duration = Math.max(item.end - item.start, item.type === 'marker' ? 0 : getMinimumDuration(item));
   const minHeight = item.type === 'marker'
     ? MARKER_HEIGHT
     : item.type === 'rest'
@@ -1264,13 +1269,14 @@ function resolveMove(day, item, proposedStart, direction) {
 
 function resolveResizeStart(day, item, proposedStart) {
   const renderStart = day.renderStart ?? day.baseStart;
-  let start = Math.max(renderStart, Math.min(proposedStart, item.end - MIN_DURATION));
+  const minDuration = getMinimumDuration(item);
+  let start = Math.max(renderStart, Math.min(proposedStart, item.end - minDuration));
 
   for (let i = 0; i < 20; i += 1) {
     const overlaps = findOverlaps(day, item, start, item.end);
     if (!overlaps.length) break;
     start = Math.max(start, ...overlaps.map(overlap => overlap.end));
-    start = Math.min(start, item.end - MIN_DURATION);
+    start = Math.min(start, item.end - minDuration);
   }
 
   return start;
@@ -1278,13 +1284,14 @@ function resolveResizeStart(day, item, proposedStart) {
 
 function resolveResizeEnd(day, item, proposedEnd) {
   const renderEnd = day.renderEnd ?? day.baseEnd;
-  let end = Math.min(renderEnd, Math.max(proposedEnd, item.start + MIN_DURATION));
+  const minDuration = getMinimumDuration(item);
+  let end = Math.min(renderEnd, Math.max(proposedEnd, item.start + minDuration));
 
   for (let i = 0; i < 20; i += 1) {
     const overlaps = findOverlaps(day, item, item.start, end);
     if (!overlaps.length) break;
     end = Math.min(end, ...overlaps.map(overlap => overlap.start));
-    end = Math.max(end, item.start + MIN_DURATION);
+    end = Math.max(end, item.start + minDuration);
   }
 
   return end;
