@@ -99,6 +99,7 @@ nav .nav-title-small{font-size:.9em;margin-left:.28em;}
 .edit-tools button:hover{background:var(--bg);border-color:var(--accent);}
 .add-mode-btn{border-style:dashed;}
 .add-mode-btn.is-active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.toggle-done-btn.is-active{background:var(--text);border-color:var(--text);color:var(--surface);}
 
 .timeline.enhanced{flex:none;padding:8px 0 10px;overflow:hidden;}
 .timeline.enhanced .slot{position:absolute;left:5%;right:5%;margin:0;box-shadow:0 0 0 2px var(--bg);}
@@ -246,6 +247,7 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
         <button class="add-mode-btn" type="button" data-add-kind="lunch">＋ 午休</button>
         <button class="add-mode-btn" type="button" data-add-kind="dinner">＋ 晚餐</button>
       </div>
+      <button class="toggle-done-btn" type="button">隱藏已完成</button>
       <button class="reset-layout-btn" type="button">重設時間</button>
     </div>
   </div>
@@ -390,6 +392,7 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
         <button class="add-mode-btn" type="button" data-add-kind="lunch">＋ 午休</button>
         <button class="add-mode-btn" type="button" data-add-kind="dinner">＋ 晚餐</button>
       </div>
+      <button class="toggle-done-btn" type="button">隱藏已完成</button>
       <button class="reset-layout-btn" type="button">重設時間</button>
     </div>
   </div>
@@ -506,7 +509,8 @@ const STORAGE_KEYS = {
   layout: 'study-plan-layout-v2',
   done: 'study-plan-done-v2',
   custom: 'study-plan-custom-items-v1',
-  meta: 'study-plan-item-meta-v1'
+  meta: 'study-plan-item-meta-v1',
+  hideDone: 'study-plan-hide-done-v1'
 };
 const SNAP_MINUTES = 5;
 const MIN_DURATION = 15;
@@ -567,6 +571,7 @@ let addMode = null;
 let customSequence = 0;
 let slotMenuState = null;
 let colorTarget = null;
+let hideDoneOnTimeline = Boolean(loadJson(STORAGE_KEYS.hideDone, false));
 
 function loadJson(key, fallback) {
   try {
@@ -733,6 +738,10 @@ function detectSubjectKey(classes, label, name) {
 
 function isItemDone(item) {
   return item.fixedDone || (item.sid ? checkedSet.has(item.sid) : false);
+}
+
+function isTimelineItemVisible(item) {
+  return !item.hidden && !(hideDoneOnTimeline && isItemDone(item));
 }
 
 function isTaskDone(task) {
@@ -1011,8 +1020,11 @@ function getDurationText(item) {
 
 function updateDayHours(day) {
   if (!day.hoursEl) return;
-  const timed = day.items.filter(item => !item.hidden && item.end > item.start);
-  if (!timed.length) return;
+  const timed = day.items.filter(item => isTimelineItemVisible(item) && item.end > item.start);
+  if (!timed.length) {
+    day.hoursEl.textContent = '—';
+    return;
+  }
   const start = Math.min(...timed.map(item => item.start));
   const end = Math.max(...timed.map(item => item.end));
   day.hoursEl.textContent = `${minsToHHMM(start)}–${minsToHHMM(end)}`;
@@ -1129,7 +1141,7 @@ function renderDay(day) {
 
   [...day.items]
     .sort((a, b) => a.start - b.start || a.order - b.order)
-    .filter(item => !item.hidden)
+    .filter(isTimelineItemVisible)
     .forEach(item => timelineEl.appendChild(renderItem(day, item)));
 
   updateDayHours(day);
@@ -1153,7 +1165,7 @@ function clampInterval(day, start, duration) {
 }
 
 function getBlockingItems(day, activeItem) {
-  return day.items.filter(item => item !== activeItem && !item.hidden && item.type !== 'marker');
+  return day.items.filter(item => item !== activeItem && isTimelineItemVisible(item) && item.type !== 'marker');
 }
 
 function getPointerMinutes(day, clientY) {
@@ -1519,6 +1531,29 @@ function bindResetButtons() {
   });
 }
 
+function persistHideDoneState() {
+  saveJson(STORAGE_KEYS.hideDone, hideDoneOnTimeline);
+}
+
+function syncHideDoneUi() {
+  document.querySelectorAll('.toggle-done-btn').forEach(button => {
+    button.classList.toggle('is-active', hideDoneOnTimeline);
+    button.textContent = hideDoneOnTimeline ? '顯示已完成' : '隱藏已完成';
+  });
+}
+
+function bindHideDoneButtons() {
+  document.querySelectorAll('.toggle-done-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      hideDoneOnTimeline = !hideDoneOnTimeline;
+      persistHideDoneState();
+      syncHideDoneUi();
+      renderAllTimelines();
+      update();
+    });
+  });
+}
+
 function syncAddModeUi() {
   document.querySelectorAll('.add-mode-btn').forEach(button => {
     button.classList.toggle('is-active', button.dataset.addKind === addMode);
@@ -1780,7 +1815,7 @@ function drawNowLine(dates) {
   const nowMins = now.getHours() * 60 + now.getMinutes();
   const timelineEl = day.timelineEl;
   const slots = day.items
-    .filter(item => !item.hidden && item.renderEl && item.end > item.start && item.type !== 'marker')
+    .filter(item => isTimelineItemVisible(item) && item.renderEl && item.end > item.start && item.type !== 'marker')
     .map(item => ({ el: item.renderEl, start: item.start, end: item.end }))
     .sort((a, b) => a.start - b.start);
 
@@ -1851,12 +1886,14 @@ function switchTab(tab) {
 
 parseInitialDom();
 bindResetButtons();
+bindHideDoneButtons();
 bindAddButtons();
 bindTimelineInsertion();
 bindSlotMenu();
 renderAllTimelines();
 renderProgress();
 syncAddModeUi();
+syncHideDoneUi();
 
 const todayMMDD = getMMDD(new Date());
 if (examDates.includes(todayMMDD)) switchTab('exam');
