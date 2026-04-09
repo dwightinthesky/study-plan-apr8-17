@@ -1083,7 +1083,7 @@ function renderGuides(day) {
   return fragment;
 }
 
-function renderItem(day, item) {
+function renderItem(day, item, nextItem = null) {
   const el = document.createElement('div');
   el.className = `slot ${getDisplayClasses(item)}`.trim();
   el.dataset.start = minsToHHMM(item.start);
@@ -1092,18 +1092,30 @@ function renderItem(day, item) {
   if (item.editable) el.dataset.editable = 'true';
   if (item.isDragging) el.classList.add('dragging');
 
-  const renderStart = day.renderStart ?? day.baseStart;
-  const top = TIMELINE_PADDING + (item.start - renderStart) * PX_PER_MIN;
+  const { top, height: actualHeight } = getItemActualMetrics(day, item);
   const duration = Math.max(item.end - item.start, item.type === 'marker' ? 0 : getMinimumDuration(item));
   const minHeight = item.type === 'marker'
     ? MARKER_HEIGHT
     : item.type === 'rest'
       ? REST_MIN_HEIGHT
       : SLOT_MIN_HEIGHT;
-  const height = Math.max(minHeight, duration * PX_PER_MIN);
+  const baseHeight = Math.max(minHeight, duration * PX_PER_MIN);
+  let maxVisualHeight = baseHeight;
+  if (nextItem) {
+    const nextTop = getItemActualMetrics(day, nextItem).top;
+    const gapPx = Math.max(0, (nextItem.start - item.end) * PX_PER_MIN);
+    const visualGap = gapPx > 0 ? Math.min(2, gapPx / 4) : 0;
+    maxVisualHeight = Math.max(actualHeight, nextTop - top - visualGap);
+  }
+  const height = item.type === 'marker'
+    ? MARKER_HEIGHT
+    : Math.max(actualHeight, Math.min(baseHeight, maxVisualHeight));
 
   el.style.top = `${top}px`;
   el.style.height = `${height}px`;
+  item.actualTop = top;
+  item.actualHeight = actualHeight;
+  item.visualHeight = height;
 
   const timeText = getItemTimeText(item);
   const durationText = getDurationText(item);
@@ -1161,10 +1173,13 @@ function renderDay(day) {
   timelineEl.style.height = `${(renderEnd - renderStart) * PX_PER_MIN + TIMELINE_PADDING * 2}px`;
   timelineEl.appendChild(renderGuides(day));
 
-  [...day.items]
+  const visibleItems = [...day.items]
     .sort((a, b) => a.start - b.start || a.order - b.order)
-    .filter(isTimelineItemVisible)
-    .forEach(item => timelineEl.appendChild(renderItem(day, item)));
+    .filter(isTimelineItemVisible);
+
+  visibleItems.forEach((item, index) => {
+    timelineEl.appendChild(renderItem(day, item, visibleItems[index + 1] || null));
+  });
 
   updateDayHours(day);
 }
