@@ -788,6 +788,22 @@ function isTaskOverdue(task, now = new Date()) {
   return task.mmdd < today || (task.mmdd === today && task.endMins <= nowMins);
 }
 
+function shouldUseLabelTitle(subjectKey, label) {
+  return subjectKey === 'law' && Boolean(label);
+}
+
+function getPrimaryDisplayText(entry) {
+  const subjectKey = entry.subjectKey || entry.key;
+  if (shouldUseLabelTitle(subjectKey, entry.label)) return entry.label;
+  return entry.name || entry.label || entry.text || '';
+}
+
+function getSecondaryDisplayText(entry) {
+  const subjectKey = entry.subjectKey || entry.key;
+  if (shouldUseLabelTitle(subjectKey, entry.label)) return entry.name || '';
+  return entry.label || '';
+}
+
 function nextCustomSid(kind) {
   customSequence += 1;
   return `custom-${kind}-${Date.now()}-${customSequence}`;
@@ -1086,6 +1102,8 @@ function renderItem(day, item) {
 
   const timeText = getItemTimeText(item);
   const durationText = getDurationText(item);
+  const primaryText = getPrimaryDisplayText(item);
+  const secondaryText = getSecondaryDisplayText(item);
 
   if (item.type === 'rest') {
     el.innerHTML = `
@@ -1098,12 +1116,12 @@ function renderItem(day, item) {
       </div>
     `;
   } else {
-    const metaLine = [timeText, item.label].filter(Boolean).join(' · ');
+    const metaLine = [timeText, secondaryText].filter(Boolean).join(' · ');
     el.innerHTML = `
       <div class="slot-content">
         ${metaLine ? `<div class="s-meta-line">${escapeHtml(metaLine)}</div>` : ''}
         <div class="s-main-line">
-          <span class="s-main-text">${escapeHtml(item.name)}</span>
+          <span class="s-main-text">${escapeHtml(primaryText)}</span>
           ${durationText && !item.fixedDone ? `<span class="s-inline-dur">${escapeHtml(durationText)}</span>` : ''}
         </div>
       </div>
@@ -1630,13 +1648,15 @@ function buildTaskItem(task, options = {}) {
   item.className = `task-item ${getTaskCardClass(task)}${isDone ? ' is-done' : ''}${overdue ? ' is-overdue' : ''}`;
   item.dataset.sid = task.sid;
   const meta = [task.dayName, task.time].filter(Boolean).join(' · ');
+  const primaryText = getPrimaryDisplayText(task);
+  const secondaryText = getSecondaryDisplayText(task);
 
   item.innerHTML = `
     <input type="checkbox" ${isDone ? 'checked' : ''} ${task.fixedDone ? 'disabled' : ''}>
     <div class="ti-body">
       ${meta ? `<div class="ti-meta">${escapeHtml(meta)}</div>` : ''}
-      ${task.label ? `<div class="ti-label">${escapeHtml(task.label)}</div>` : ''}
-      <div class="ti-name">${escapeHtml(task.name)}</div>
+      ${secondaryText ? `<div class="ti-label">${escapeHtml(secondaryText)}</div>` : ''}
+      <div class="ti-name">${escapeHtml(primaryText)}</div>
       ${task.dur && !isDone ? `<div class="ti-dur">${escapeHtml(task.dur)}</div>` : ''}
     </div>
   `;
@@ -1753,7 +1773,7 @@ function buildSchedule(dates) {
           day.dayId,
           minsToHHMM(item.start),
           minsToHHMM(item.end),
-          [item.label, item.name].filter(Boolean).join(' ')
+          getPrimaryDisplayText(item)
         ])
     )
     .sort((a, b) => a[0].localeCompare(b[0]) || toMins(a[1]) - toMins(b[1]));
