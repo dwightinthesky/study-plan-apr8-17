@@ -155,7 +155,24 @@ button.pb[aria-pressed="true"]{box-shadow:inset 0 0 0 1px rgba(26,25,22,.18);}
 .slot-menu button.danger{color:var(--accent);}
 .slot-menu button.danger.is-confirm{background:#fbe9e6;}
 .slot-menu button.danger:hover{background:#fbe9e6;}
-.slot-color-input{position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none;}
+.slot-modal-backdrop{position:fixed;inset:0;background:rgba(26,25,22,.18);display:flex;align-items:center;justify-content:center;padding:1rem;z-index:60;}
+.slot-modal-backdrop[hidden]{display:none;}
+.slot-modal{width:min(420px,100%);background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 18px 50px rgba(26,25,22,.18);padding:1rem;}
+.slot-modal-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:.9rem;}
+.slot-modal-title{font-family:'Fraunces',serif;font-size:1.15rem;color:var(--text);}
+.slot-modal-close{border:none;background:transparent;color:var(--muted);font:inherit;font-size:1rem;cursor:pointer;padding:.2rem .35rem;border-radius:6px;}
+.slot-modal-close:hover{background:var(--bg);color:var(--text);}
+.slot-modal-body{display:flex;flex-direction:column;gap:.8rem;}
+.slot-field{display:flex;flex-direction:column;gap:.35rem;}
+.slot-field[hidden]{display:none;}
+.slot-field span{font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
+.slot-field input{width:100%;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;padding:.65rem .75rem;}
+.slot-field input[type="color"]{padding:.25rem;height:44px;cursor:pointer;}
+.slot-modal-actions{display:flex;justify-content:flex-end;gap:.6rem;margin-top:1rem;}
+.slot-modal-actions button{border:1px solid var(--border2);background:var(--surface);color:var(--text);padding:.5rem .85rem;border-radius:999px;font:inherit;cursor:pointer;}
+.slot-modal-actions button:hover{background:var(--bg);border-color:var(--accent);}
+.slot-modal-actions .primary{background:var(--text);border-color:var(--text);color:var(--surface);}
+.slot-modal-actions .primary:hover{background:#34322d;border-color:#34322d;}
 
 /* PROGRESS PAGE */
 .prog-wrap{padding:1.25rem 2rem;overflow-x:auto;}
@@ -540,7 +557,36 @@ footer{padding:1.25rem 2rem;border-top:1px solid var(--border);font-size:10px;co
   <button type="button" data-slot-action="color">選色</button>
   <button type="button" class="danger" data-slot-action="delete">刪除</button>
 </div>
-<input class="slot-color-input" id="slot-color-input" type="color" value="#c0392b">
+<div class="slot-modal-backdrop" id="slot-modal-backdrop" hidden>
+  <div class="slot-modal" role="dialog" aria-modal="true" aria-labelledby="slot-modal-title">
+    <div class="slot-modal-head">
+      <div class="slot-modal-title" id="slot-modal-title">編輯</div>
+      <button class="slot-modal-close" type="button" data-slot-modal-close>✕</button>
+    </div>
+    <form class="slot-modal-body" id="slot-modal-form">
+      <label class="slot-field" id="slot-modal-text-field" hidden>
+        <span>內容</span>
+        <input id="slot-modal-text" type="text" autocomplete="off">
+      </label>
+      <label class="slot-field" id="slot-modal-name-field" hidden>
+        <span>Session 內容</span>
+        <input id="slot-modal-name" type="text" autocomplete="off">
+      </label>
+      <label class="slot-field" id="slot-modal-label-field" hidden>
+        <span>上方標籤</span>
+        <input id="slot-modal-label" type="text" autocomplete="off">
+      </label>
+      <label class="slot-field" id="slot-modal-color-field" hidden>
+        <span>顏色</span>
+        <input id="slot-modal-color" type="color" value="#c0392b">
+      </label>
+    </form>
+    <div class="slot-modal-actions">
+      <button type="button" data-slot-modal-cancel>取消</button>
+      <button class="primary" type="submit" form="slot-modal-form">儲存</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const STORAGE_KEYS = {
@@ -616,8 +662,8 @@ let overdueExpanded = false;
 let addMode = null;
 let customSequence = 0;
 let slotMenuState = null;
-let colorTarget = null;
 let hideDoneOnTimeline = Boolean(loadJson(STORAGE_KEYS.hideDone, false));
+let slotModalState = null;
 const savedSubjectFilters = loadJson(STORAGE_KEYS.subjectFilters, {});
 const subjectFilters = {
   prep: new Set((savedSubjectFilters.prep || []).filter(key => PAGE_FILTER_SUBJECTS.prep.includes(key))),
@@ -1533,32 +1579,84 @@ function showSlotMenu(day, item, clientX, clientY) {
   menu.style.top = `${Math.max(8, top)}px`;
 }
 
-function editSlotContent(item) {
+function getSlotModalEls() {
+  return {
+    backdrop: document.getElementById('slot-modal-backdrop'),
+    title: document.getElementById('slot-modal-title'),
+    form: document.getElementById('slot-modal-form'),
+    textField: document.getElementById('slot-modal-text-field'),
+    nameField: document.getElementById('slot-modal-name-field'),
+    labelField: document.getElementById('slot-modal-label-field'),
+    colorField: document.getElementById('slot-modal-color-field'),
+    textInput: document.getElementById('slot-modal-text'),
+    nameInput: document.getElementById('slot-modal-name'),
+    labelInput: document.getElementById('slot-modal-label'),
+    colorInput: document.getElementById('slot-modal-color')
+  };
+}
+
+function closeSlotModal() {
+  const { backdrop, form } = getSlotModalEls();
+  backdrop.hidden = true;
+  form.reset();
+  slotModalState = null;
+}
+
+function openSlotModal(mode, item) {
   if (!item) return;
-  if (item.type === 'rest') {
-    const nextText = window.prompt('內容', item.text || '休息');
-    if (nextText === null) return;
-    item.text = nextText.trim() || '休息';
-  } else {
-    const nextName = window.prompt('Session 內容', item.name || '複習 Session');
-    if (nextName === null) return;
-    const nextLabel = window.prompt('上方標籤（可留白）', item.label || '');
-    if (nextLabel === null) return;
-    item.name = nextName.trim() || item.name || '複習 Session';
-    item.label = nextLabel.trim();
+  hideSlotMenu();
+  const els = getSlotModalEls();
+  slotModalState = { mode, item };
+  els.form.reset();
+  els.textField.hidden = true;
+  els.nameField.hidden = true;
+  els.labelField.hidden = true;
+  els.colorField.hidden = true;
+
+  if (mode === 'edit') {
+    els.title.textContent = item.type === 'rest' ? '編輯休息內容' : '編輯 Session';
+    if (item.type === 'rest') {
+      els.textField.hidden = false;
+      els.textInput.value = item.text || '休息';
+      setTimeout(() => els.textInput.focus(), 0);
+    } else {
+      els.nameField.hidden = false;
+      els.labelField.hidden = false;
+      els.nameInput.value = item.name || '複習 Session';
+      els.labelInput.value = item.label || '';
+      setTimeout(() => els.nameInput.focus(), 0);
+    }
+  } else if (mode === 'color') {
+    els.title.textContent = '選色';
+    els.colorField.hidden = false;
+    els.colorInput.value = rgbToHex(item.customColor || getComputedStyle(item.renderEl).backgroundColor);
+    setTimeout(() => els.colorInput.focus(), 0);
   }
+
+  els.backdrop.hidden = false;
+}
+
+function saveSlotModal() {
+  if (!slotModalState) return;
+  const { item, mode } = slotModalState;
+  const els = getSlotModalEls();
+
+  if (mode === 'edit') {
+    if (item.type === 'rest') {
+      item.text = els.textInput.value.trim() || '休息';
+    } else {
+      item.name = els.nameInput.value.trim() || item.name || '複習 Session';
+      item.label = els.labelInput.value.trim();
+    }
+  } else if (mode === 'color') {
+    item.customColor = els.colorInput.value;
+  }
+
   saveItemState(item);
+  closeSlotModal();
   renderAllTimelines();
   renderProgress();
   update();
-}
-
-function pickSlotColor(item) {
-  if (!item) return;
-  colorTarget = item;
-  const colorInput = document.getElementById('slot-color-input');
-  colorInput.value = rgbToHex(item.customColor || getComputedStyle(item.renderEl).backgroundColor);
-  colorInput.click();
 }
 
 function handleSlotMenuAction(action) {
@@ -1578,13 +1676,12 @@ function handleSlotMenuAction(action) {
     removeItem(day, item);
     return;
   }
-  hideSlotMenu();
   if (action === 'edit') {
-    editSlotContent(item);
+    openSlotModal('edit', item);
     return;
   }
   if (action === 'color') {
-    pickSlotColor(item);
+    openSlotModal('color', item);
   }
 }
 
@@ -1607,18 +1704,22 @@ function bindSlotMenu() {
   document.addEventListener('keydown', event => {
     if (event.key === 'Escape') hideSlotMenu();
   });
+}
 
-  const colorInput = document.getElementById('slot-color-input');
-  colorInput.addEventListener('input', () => {
-    if (!colorTarget) return;
-    colorTarget.customColor = colorInput.value;
-    saveItemState(colorTarget);
-    renderAllTimelines();
-    renderProgress();
-    update();
+function bindSlotModal() {
+  const { backdrop, form } = getSlotModalEls();
+  backdrop.addEventListener('click', event => {
+    if (event.target === backdrop) closeSlotModal();
   });
-  colorInput.addEventListener('change', () => {
-    colorTarget = null;
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    saveSlotModal();
+  });
+  document.querySelectorAll('[data-slot-modal-close],[data-slot-modal-cancel]').forEach(button => {
+    button.addEventListener('click', closeSlotModal);
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && slotModalState) closeSlotModal();
   });
 }
 
@@ -2179,6 +2280,7 @@ bindSubjectFilterButtons();
 bindAddButtons();
 bindTimelineInsertion();
 bindSlotMenu();
+bindSlotModal();
 renderAllTimelines();
 renderProgress();
 syncAddModeUi();
