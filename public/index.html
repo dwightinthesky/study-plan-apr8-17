@@ -1042,6 +1042,69 @@ function restoreCustomItems() {
   });
 }
 
+function refreshDayRanges() {
+  dayModels.forEach(day => {
+    const visibleTimed = day.items.filter(item => !item.hidden && item.end > item.start);
+    const fallbackTimed = day.items.filter(item => item.end > item.start);
+    const timed = visibleTimed.length ? visibleTimed : fallbackTimed;
+    if (!timed.length) return;
+    day.baseStart = Math.min(...timed.map(item => item.start));
+    day.baseEnd = Math.max(...timed.map(item => item.end));
+  });
+
+  const groups = new Map();
+  dayModels.forEach(day => {
+    const days = groups.get(day.gridEl) || [];
+    days.push(day);
+    groups.set(day.gridEl, days);
+  });
+
+  groups.forEach(days => {
+    const renderStart = Math.min(...days.map(day => day.baseStart));
+    const renderEnd = Math.max(...days.map(day => day.baseEnd));
+    days.forEach(day => {
+      day.renderStart = renderStart;
+      day.renderEnd = renderEnd;
+    });
+  });
+}
+
+function migratePrepDaysToTenStart() {
+  if (loadJson(STORAGE_KEYS.prepStartMigration, false)) return;
+
+  let changed = false;
+  dayModels
+    .filter(day => prepDates.includes(day.dayId))
+    .forEach(day => {
+      const timed = day.items.filter(item => !item.hidden && item.end > item.start);
+      if (!timed.length) return;
+      const earliest = Math.min(...timed.map(item => item.start));
+      const delta = PREP_TARGET_START - earliest;
+      if (!delta) return;
+
+      day.items.forEach(item => {
+        if (item.end <= item.start) return;
+        item.start += delta;
+        item.end += delta;
+        if (item.custom) {
+          item.originalStart += delta;
+          item.originalEnd += delta;
+        }
+      });
+      changed = true;
+    });
+
+  if (!changed) {
+    saveJson(STORAGE_KEYS.prepStartMigration, true);
+    return;
+  }
+
+  refreshDayRanges();
+  persistLayoutAdjustments();
+  persistCustomItems();
+  saveJson(STORAGE_KEYS.prepStartMigration, true);
+}
+
 function parseInitialDom() {
   document.querySelectorAll('.timeline').forEach(timelineEl => {
     const dayEl = timelineEl.closest('.day-col');
@@ -1071,22 +1134,9 @@ function parseInitialDom() {
 
   restorePersistedDayAssignments();
   restoreCustomItems();
-
-  const groups = new Map();
-  dayModels.forEach(day => {
-    const days = groups.get(day.gridEl) || [];
-    days.push(day);
-    groups.set(day.gridEl, days);
-  });
-
-  groups.forEach(days => {
-    const renderStart = Math.min(...days.map(day => day.baseStart));
-    const renderEnd = Math.max(...days.map(day => day.baseEnd));
-    days.forEach(day => {
-      day.renderStart = renderStart;
-      day.renderEnd = renderEnd;
-    });
-  });
+  refreshDayRanges();
+  migratePrepDaysToTenStart();
+  refreshDayRanges();
 }
 
 function getDisplayClasses(item) {
